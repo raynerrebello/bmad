@@ -13,6 +13,7 @@ import static java.lang.Math.*;
  * vectors, which in turn usually leads to inacceptable runtimes in 
  * subsequent steps.
  */
+// test
 public class IntersectionGenerator implements CandidateGenerator {
 
 	public BooleanMatrix generateCandidates(BooleanMatrix a, int dimension) {
