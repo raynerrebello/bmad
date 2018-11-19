@@ -150,19 +150,36 @@ public class BooleanMatrix {
 	/**
 	 * In-place operation on two row vectors, corresponding to SAXPY in 
 	 * linear algebra
+	 * Calls the "xor = false" version of baxoy, where addition is defined as OR
 	 * 
 	 * @param alpha factor
 	 * @param x other row
 	 */
 	public void baxoy(byte alpha, BooleanMatrix x) {
+		baxoy(alpha, x, false);
+	}
+	/**
+	 * In-place operation on two row vectors, corresponding to SAXPY in
+	 * linear algebra
+	 *
+	 * @param alpha factor
+	 * @param x other row
+	 * @param xor true = XOR, false = OR.
+	 */
+	public void baxoy(byte alpha, BooleanMatrix x, boolean xor) {
 		if (alpha == 0) return;
 		byte[] thisRow = rows[0];
 		byte[] otherRow = x.rows[0];
-		
+
 		for (int c = 0; c < width; c++) {
-			thisRow[c] = (byte)(thisRow[c] | (otherRow[c] & alpha));
+			if(xor){
+				// use "xor" for vector addition
+				thisRow[c] = (byte)(thisRow[c] ^ (otherRow[c] & alpha));
+			} else{
+				// use "or" for vector addition
+				thisRow[c] = (byte)(thisRow[c] | (otherRow[c] & alpha));
+			}
 		}
-		
 	}
 	
 	/**
@@ -188,29 +205,42 @@ public class BooleanMatrix {
 	
 	/**
 	 * Calculates the boolean product with the other matrix.
+	 * Calls the "xor = false" version of booleanProduct.
 	 * 
 	 * @param other boolean matrix with compatible dimension
 	 * @return
 	 */
 	public BooleanMatrix booleanProduct(BooleanMatrix other) {
-	    if (this.width != other.height) {
-	        throw new IllegalArgumentException(
-	            "Incompatible matrix dimensions: " +
-	            "cannot multiply " + this.height + " x " + this.width +
-	            " matrix with a " + other.height + " x " + other.width +
-	            " matrix."
-	        );
-	    }
+		return booleanProduct(other, false);
+	}
+
+	/**
+	 * Calculates the boolean product with the other matrix.
+	 * Addition is defined either as logical "or" or "xor".
+	 *
+	 * @param other boolean matrix with compatible dimension
+	 * @return
+	 * @param xor boolean indicator of addition version: true = xor, false = or.
+	 */
+	public BooleanMatrix booleanProduct(BooleanMatrix other, boolean xor) {
+		if (this.width != other.height) {
+			throw new IllegalArgumentException(
+					"Incompatible matrix dimensions: " +
+							"cannot multiply " + this.height + " x " + this.width +
+							" matrix with a " + other.height + " x " + other.width +
+							" matrix."
+			);
+		}
 		BooleanMatrix result = new BooleanMatrix(this.height, other.width);
 		for (int r = 0; r < this.height; r++) {
 			BooleanMatrix row = result.getRow(r);
 			for (int c = 0; c < this.width; c++) {
-				row.baxoy(apply(r, c), other.getRow(c));
+					row.baxoy(apply(r, c), other.getRow(c), xor);
 			}
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Transforms this matrix to a generic matrix. 
 	 * The generic versions are significantly slower for computations,
