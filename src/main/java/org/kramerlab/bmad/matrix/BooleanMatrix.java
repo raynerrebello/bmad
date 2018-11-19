@@ -15,42 +15,42 @@ import weka.core.DenseInstance;
 
 /**
  * Dense boolean matrix with 3-valued boolean logic
- * 
+ *
  * TRUE is represented as 2, UNKNOWN is represented as 1, 
  * FALSE is represented as 0, AND corresponds to MIN,
  * OR corresponds to MAX
  */
 
 public class BooleanMatrix {
-	
-    public static final byte TRUE = 3;
-    public static final byte UNKNOWN = 1;
-    public static final byte FALSE = 0;
 
-    /**
-     * Negation of a byte.
-     *
-     * @param b the bute to negate
-     * @return the negated byte
-     */
-    public static byte not(byte b) {
-        switch(b) {
-            case TRUE: return FALSE;
-            case UNKNOWN: return UNKNOWN;
-            case FALSE: return TRUE;
-            default: throw new IllegalArgumentException(
-                "b = " + b + " is not in {TRUE, FALSE, UNKNOWN}"
-            );
-        }
-    }
-    
+	public static final byte TRUE = 3;
+	public static final byte UNKNOWN = 1;
+	public static final byte FALSE = 0;
+
+	/**
+	 * Negation of a byte.
+	 *
+	 * @param b the bute to negate
+	 * @return the negated byte
+	 */
+	public static byte not(byte b) {
+		switch(b) {
+			case TRUE: return FALSE;
+			case UNKNOWN: return UNKNOWN;
+			case FALSE: return TRUE;
+			default: throw new IllegalArgumentException(
+					"b = " + b + " is not in {TRUE, FALSE, UNKNOWN}"
+			);
+		}
+	}
+
 	private int width;
 	private int height;
 	private byte[][] rows;
-	
+
 	/**
 	 * Constructs new empty matrix with given dimensions, filled with FALSE
-	 * 
+	 *
 	 * @param h height
 	 * @param w width
 	 */
@@ -59,7 +59,7 @@ public class BooleanMatrix {
 		this.width = w;
 		rows = new byte[h][w];
 	}
-	
+
 	/**
 	 * Creates a deep copy of another matrix
 	 * @param b
@@ -72,12 +72,12 @@ public class BooleanMatrix {
 			}
 		}
 	}
-	
+
 	/**
 	 * Constructs dense boolean matrix from given array in 
 	 * row major format. Assumes that the array is rectangular
 	 * (all rows have equal length), and not degenerate (has entries).
-	 * 
+	 *
 	 * @param rowMajor entries in column major format
 	 */
 	public BooleanMatrix(byte[][] rowMajor) {
@@ -85,7 +85,7 @@ public class BooleanMatrix {
 		this.height = rowMajor.length;
 		this.rows = rowMajor;
 	}
-	
+
 	/**
 	 * Constructs dense boolean matrix from weka instances, 
 	 * that is expected to be filled with values 0, ?, 1
@@ -103,15 +103,15 @@ public class BooleanMatrix {
 			row++;
 		}
 	}
-	
+
 	public int getWidth() {
 		return width;
 	}
-	
+
 	public int getHeight() {
 		return height;
 	}
-	
+
 	/**
 	 * Sets the entry at position <code>(r, c)</code> 
 	 * to <code>b</code> 
@@ -122,7 +122,7 @@ public class BooleanMatrix {
 	public void update(int r, int c, byte b) {
 		rows[r][c] = b;
 	}
-	
+
 	public byte apply(int r, int c) {
 		return rows[r][c];
 	}
@@ -130,28 +130,28 @@ public class BooleanMatrix {
 	public byte apply(int c) {
 		return rows[0][c];
 	}
-	
+
 	public void update(int c, byte b) {
 		rows[0][c] = b;
 	}
-	
+
 	public BooleanMatrix getRows(List<Integer> indices) {
 		byte[][] entries = new byte[indices.size()][width];
-		
+
 		int r = 0;
 		for (int i: indices) {
 			entries[r] = rows[i];
 			r++;
 		}
-		
+
 		return new BooleanMatrix(entries);
 	}
-	
+
 	/**
 	 * In-place operation on two row vectors, corresponding to SAXPY in 
 	 * linear algebra
 	 * Calls the "xor = false" version of baxoy, where addition is defined as OR
-	 * 
+	 *
 	 * @param alpha factor
 	 * @param x other row
 	 */
@@ -181,11 +181,11 @@ public class BooleanMatrix {
 			}
 		}
 	}
-	
+
 	/**
 	 * Extracts single row as separate matrix. No values are copied, the row
 	 * is backed by the same array
-	 * 
+	 *
 	 * @param r index of the row
 	 * @return row matrix
 	 */
@@ -195,18 +195,18 @@ public class BooleanMatrix {
 
 	/**
 	 * Analogous to get row: no values are copied
-	 * 
+	 *
 	 * @param r index of the row
 	 * @param row row vector
 	 */
 	public void setRow(int r, BooleanMatrix row) {
 		rows[r] = row.rows[0];
 	}
-	
+
 	/**
 	 * Calculates the boolean product with the other matrix.
 	 * Calls the "xor = false" version of booleanProduct.
-	 * 
+	 *
 	 * @param other boolean matrix with compatible dimension
 	 * @return
 	 */
@@ -235,7 +235,7 @@ public class BooleanMatrix {
 		for (int r = 0; r < this.height; r++) {
 			BooleanMatrix row = result.getRow(r);
 			for (int c = 0; c < this.width; c++) {
-					row.baxoy(apply(r, c), other.getRow(c), xor);
+				row.baxoy(apply(r, c), other.getRow(c), xor);
 			}
 		}
 		return result;
@@ -246,7 +246,7 @@ public class BooleanMatrix {
 	 * The generic versions are significantly slower for computations,
 	 * but provide many handy O(n^2) methods (e.g. for printing and
 	 * drawing matrices)
-	 * 
+	 *
 	 * @return same matrix in generic format
 	 */
 	public RowMajor<Byte> toRowMajor() {
@@ -258,15 +258,15 @@ public class BooleanMatrix {
 		}
 		return m;
 	}
-    
+
 	/**
 	 * Calculates the reconstruction error between this matrix and the
 	 * reconstruction.
-	 *  
+	 *
 	 * @param reconstruction some other matrix
 	 * @param onesWeight weight of <code>1-&gt;0</code> errors 
 	 * relative to <code>0-&gt;1</code> errors
-	 * 
+	 *
 	 * @return
 	 */
 	public double reconstructionError(BooleanMatrix reconstruction, double onesWeight) {
@@ -286,20 +286,20 @@ public class BooleanMatrix {
 		}
 		return totalError;
 	}
-	
+
 	/**
 	 * Calculates the relative <code>1-&gt;0</code> and <code>0-&gt;1</code> 
 	 * reconstruction error, that is, the total error divided by total
 	 * maximum possible error.
-	 * 
+	 *
 	 * Assumes, that there are no unknowns in the reconstruction.
 	 * The total weight equals <code>#0 + onesWeight * #1</code>.
 	 * Each <code>1-&gt;0</code> error costs <code>onesWeight</code>.
 	 * Each <code>0-&gt;1</code> error costs <code>1</code>.
-	 * 
+	 *
 	 * @param reconstruction
 	 * @param onesWeight
-	 * @return 
+	 * @return
 	 *   tuple with relative <code>1-&gt;0</code> and <code>0-&gt;1</code> errors
 	 */
 	public Tuple<Double, Double> relativeOneZeroZeroOneReconstructionError(BooleanMatrix reconstruction, double onesWeight) {
@@ -325,11 +325,11 @@ public class BooleanMatrix {
 		}
 		return tuple(oneZeroError / totalWeight, zeroOneError / totalWeight);
 	}
-	
+
 	/**
 	 * Calculates the relative error 
 	 * (error divided by the maximum possible error).
-	 * 
+	 *
 	 * @param reconstruction
 	 * @param onesWeight relative weight of <code>1-&gt;0</code> errors
 	 * @return total relative error
@@ -338,7 +338,7 @@ public class BooleanMatrix {
 		Tuple<Double, Double> t = relativeOneZeroZeroOneReconstructionError(reconstruction, onesWeight);
 		return t._1 + t._2;
 	}
-	
+
 	@Override
 	public String toString() {
 		return toRowMajor().map(new Function<Byte, Character>() {
@@ -347,43 +347,43 @@ public class BooleanMatrix {
 			}
 		}).toString();
 	}
-	
+
 	/**
 	 * Draws this matrix as image. False is white, true is black, unknown is
 	 * gray.
-	 * 
+	 *
 	 * @return image representation of the matrix.
 	 */
 	public Image toImage() {
 		return toRowMajor().toImage(new Function<Byte, Color>() {
 			public Color apply(Byte b) {
 				switch((byte)b) {
-				    case FALSE: return Color.WHITE;
-				    case TRUE: return Color.BLACK;
-				    case UNKNOWN: return Color.GRAY;
-				    default: throw new IllegalArgumentException(
-				        "b = " + b + " not ternary boolean."
-				    );
+					case FALSE: return Color.WHITE;
+					case TRUE: return Color.BLACK;
+					case UNKNOWN: return Color.GRAY;
+					default: throw new IllegalArgumentException(
+							"b = " + b + " not ternary boolean."
+					);
 				}
 			}
 		});
 	}
-	
+
 	/**
 	 * Converts the matrix to Weka-Instances
-	 * 
+	 *
 	 * @return instances
 	 */
 	public Instances toInstances() {
 		ArrayList<String> nominalValues = new ArrayList<String>();
 		nominalValues.add("0");
 		nominalValues.add("1");
-		
+
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 		for (int c = 0; c < getWidth(); c++) {
 			attributes.add(new Attribute("col " + c, nominalValues));
 		}
-		
+
 		Instances instances = new Instances("boolean matrix", attributes, getHeight());
 		for (int r = 0; r < height; r++) {
 			double[] entries = new double[getWidth()];
@@ -398,57 +398,57 @@ public class BooleanMatrix {
 			}
 			instances.add(inst);
 		}
-		
+
 		return instances;
 	}
 
-    public double getDensity(){
-	double count1 = 0.0;
-	double count0 = 0.0;
+	public double getDensity(){
+		double count1 = 0.0;
+		double count0 = 0.0;
 
-	for (byte[] arr : rows) {
-	    for (byte val : arr) {
-		if (val == TRUE) {
-		    count1 ++;
+		for (byte[] arr : rows) {
+			for (byte val : arr) {
+				if (val == TRUE) {
+					count1 ++;
+				}
+				if (val == FALSE) {
+					count0 ++;
+				}
+
+			}
+
 		}
-		if (val == FALSE) {
-		    count0 ++;
-		}
-
-	    }
-
+		return count1/(count1+count0);
 	}
-	return count1/(count1+count0);
-    }
 
-    public double getMissingDensity(){
-	double count1 = 0.0;
-	double count0 = 0.0;
-	double countMiss = 0.0;
+	public double getMissingDensity(){
+		double count1 = 0.0;
+		double count0 = 0.0;
+		double countMiss = 0.0;
 
-	for (byte[] arr : rows) {
-	    for (byte val : arr) {
-		if (val == TRUE) {
-		    count1 ++;
+		for (byte[] arr : rows) {
+			for (byte val : arr) {
+				if (val == TRUE) {
+					count1 ++;
+				}
+				if (val == FALSE) {
+					count0 ++;
+				}
+				if (val == UNKNOWN) {
+					countMiss ++;
+				}
+
+			}
+
 		}
-		if (val == FALSE) {
-		    count0 ++;
-		}
-		if (val == UNKNOWN) {
-		    countMiss ++;
-		}
-
-	    }
-
+		return countMiss/(count1+count0+countMiss);
 	}
-	return countMiss/(count1+count0+countMiss);
-    }
-    
+
 	/**
 	 * Map-method, restricted to boolean matrices as output.
 	 * Creates a new matrix, that consists of point-wise applications
 	 * of the function on the entries of this matrix.
-	 * 
+	 *
 	 * @param function
 	 * @return
 	 */
@@ -464,16 +464,16 @@ public class BooleanMatrix {
 
 	/**
 	 * Returns width and height of the matrix.
-	 * 
+	 *
 	 * @return
 	 */
 	public Tuple<Integer, Integer> size() {
 		return tuple(height, width);
 	}
-	
+
 	/**
 	 * Counts ones, unknowns, and zeros contained in this matrix
-	 * 
+	 *
 	 * @return array with number of zeros, unknowns and ones (in this order)
 	 */
 	public int[] elementCount() {
