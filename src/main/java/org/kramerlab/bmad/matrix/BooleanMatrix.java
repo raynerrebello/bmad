@@ -60,6 +60,16 @@ public class BooleanMatrix {
 		rows = new byte[h][w];
 	}
 
+	public BooleanMatrix DeepTranspose(BooleanMatrix b) {
+		BooleanMatrix x = new BooleanMatrix(b.getWidth(), b.getHeight());
+		for (int r = 0; r < x.getHeight(); r++) {
+			for (int c = 0; c < x.getWidth(); c++) {
+				x.rows[r][c] = b.apply(c, r);
+			}
+		}
+		return x;
+	}
+
 	/**
 	 * Creates a deep copy of another matrix
 	 * @param b
@@ -72,6 +82,8 @@ public class BooleanMatrix {
 			}
 		}
 	}
+
+
 
 	/**
 	 * Constructs dense boolean matrix from given array in 
@@ -489,5 +501,16 @@ public class BooleanMatrix {
 			}
 		}
 		return new int[]{zeros, unknowns, ones};
+	}
+
+	public static void printMatrix(BooleanMatrix b){
+		for (int i = 0; i < b.getHeight(); i++) {
+			for (int j = 0; j <b.getWidth() ; j++) {
+				System.out.print(b.apply(i,j));
+				System.out.print(", ");
+			}
+			System.out.print("\n");
+
+		}
 	}
 }
