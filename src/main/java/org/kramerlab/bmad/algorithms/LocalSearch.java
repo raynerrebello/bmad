@@ -29,14 +29,18 @@ public class LocalSearch {
 
         int n = this.C.getHeight();
         int m = this.C.getHeight();
-        double density = this.C.getDensity();
         boolean improved = false;
+        double density = this.C.getDensity();
+        BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);
+
+
         // Combination matrix
         BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,this.k,density,0d);
         // Basis matrix
         BooleanMatrix B = RandomMatrixGeneration.randomMatrix(this.k,m,density,0d);
 
         BooleanMatrix incumbentResult = S.booleanProduct(B);
+
         double incumbentError = this.C.reconstructionError(incumbentResult,1d);
         System.out.print(" The intial recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
 
@@ -92,7 +96,7 @@ public class LocalSearch {
 
             incumbentError = this.C.reconstructionError(incumbentResult,1d);
 
-//            // Explore neighbourhood of 1 bit swaps of B
+//            // Explore neighbourhood of 1-bit swaps of B
 //            for (int i =0;i<k;i++){
 //                for (int j =0;j<m;j++){
 //
@@ -118,6 +122,7 @@ public class LocalSearch {
             System.out.print(" The recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
             it = it +1;
             System.out.println(it);
+
             if (!improved|| it>10000){
                 System.out.print(" The recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
                 break;

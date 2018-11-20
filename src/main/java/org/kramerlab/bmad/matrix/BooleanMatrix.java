@@ -60,7 +60,7 @@ public class BooleanMatrix {
 		rows = new byte[h][w];
 	}
 
-	public BooleanMatrix DeepTranspose(BooleanMatrix b) {
+	public static BooleanMatrix deepTranspose(BooleanMatrix b) {
 		BooleanMatrix x = new BooleanMatrix(b.getWidth(), b.getHeight());
 		for (int r = 0; r < x.getHeight(); r++) {
 			for (int c = 0; c < x.getWidth(); c++) {
