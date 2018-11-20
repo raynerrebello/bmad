@@ -7,10 +7,10 @@ import org.kramerlab.bmad.matrix.RandomMatrixGeneration;
 public class localSearchTest {
 
     public static void main(String... args) throws Throwable{
-        BooleanMatrix C = RandomMatrixGeneration.randomMatrix(1000,1000,0.5,0d);
+        BooleanMatrix C = RandomMatrixGeneration.randomMatrix(100,100,0.5,0d);
         System.out.println(C.toString());
 
-        LocalSearch search = new LocalSearch(C,20,true);
+        LocalSearch search = new LocalSearch(C,10,true);
         search.performDescents();
 
 

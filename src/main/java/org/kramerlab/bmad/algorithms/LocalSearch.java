@@ -69,62 +69,41 @@ public class LocalSearch {
                     }
                 }
             }
-//            System.out.println(it);
-//            incumbentResult = S.booleanProduct(B);
-//            incumbentError = this.C.reconstructionError(incumbentResult,1d);
 
-//            // Explore neighbourhood of 1 bit swaps of B
-//            for (int i =0;i<k;i++){
-//                for (int j =0;j<m;j++){
-//
-//                    B.update(i,j,BooleanMatrix.not(B.apply(i,j)));
-//
-//                    BooleanMatrix result = S.booleanProduct(B);
-//                    double error = this.C.getRow(i).reconstructionError(result,1d);
-//
-//                    if (error < incumbentError) {
-//                        incumbentError = error;
-//                        incumbentResult = result;
-//                        improved = true;
-//                    }else {
-//                        B.update(i,j,BooleanMatrix.not(B.apply(i,j)));
-//                    }
-//
-//                }
-//            }
+            BooleanMatrix S_T = BooleanMatrix.deepTranspose(S);
+            BooleanMatrix B_T = BooleanMatrix.deepTranspose(B);
 
+            for (int i =0;i<m;i++){
 
-            incumbentError = this.C.reconstructionError(incumbentResult,1d);
+                BooleanMatrix B_Ti = B_T.getRow(i);// still points to the same row
+                BooleanMatrix incumbentRow = B_Ti.booleanProduct(S_T);
 
-//            // Explore neighbourhood of 1-bit swaps of B
-//            for (int i =0;i<k;i++){
-//                for (int j =0;j<m;j++){
-//
-//                    B.update(i,j,BooleanMatrix.not(B.apply(i,j)));
-//
-//                    BooleanMatrix result = S.booleanProduct(B);
-//                    double error = this.C.getRow(i).reconstructionError(result,1d);
-//
-//                    if (error < incumbentError) {
-//                        incumbentError = error;
-//                        incumbentResult = result;
-//                        improved = true;
-//                    }else {
-//                        B.update(i,j,BooleanMatrix.not(B.apply(i,j)));
-//                    }
-//
-//                }
-//            }
+                double incumbentRowError = C_T.getRow(i).reconstructionError(incumbentRow,1d);
 
+                for (int j =0;j<this.k;j++){
 
+                    B_Ti.update(j,BooleanMatrix.not(B_Ti.apply(j))); // flip bit.
+                    BooleanMatrix rowResult = B_Ti.booleanProduct(S_T);
+                    double rowError = C_T.getRow(i).reconstructionError(rowResult,1d);
+
+                    if (rowError < incumbentRowError){
+                        improved = true;
+                    }else{
+                        B_Ti.update(j,BooleanMatrix.not(B_Ti.apply(j))); // undo the change.
+                    }
+                }
+            }
+
+            S = BooleanMatrix.deepTranspose(S_T);
+            B = BooleanMatrix.deepTranspose(B_T);
 
             // stop when our solution is locally optimal wrt to this neighbourhood.
             System.out.print(" The recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
             it = it +1;
             System.out.println(it);
 
-            if (!improved|| it>10000){
-                System.out.print(" The recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
+            if (!improved|| it>1000){
+                System.out.print(" The final recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
                 break;
             }
 
