@@ -25,14 +25,13 @@ public class LocalSearch {
         this.nextDescent = nextDescent;
     }
 
-    public void performDescents(){
-
+    // Take any old descent direction.
+    public void nextDescent(){
         int n = this.C.getHeight();
-        int m = this.C.getHeight();
+        int m = this.C.getWidth();
         boolean improved = false;
         double density = this.C.getDensity();
         BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);
-
 
         // Combination matrix
         BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,this.k,density,0d);
@@ -40,11 +39,11 @@ public class LocalSearch {
         BooleanMatrix B = RandomMatrixGeneration.randomMatrix(this.k,m,density,0d);
 
         BooleanMatrix incumbentResult = S.booleanProduct(B);
-
         double incumbentError = this.C.reconstructionError(incumbentResult,1d);
-        System.out.print(" The intial recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
 
+        System.out.print(" The initial recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
         int it = 0;
+
         while(true){
             // Explore neighbourhood of 1 bit swaps of S
             improved = false; // keep track of if an improvement has been made in this neighbourhood
@@ -98,20 +97,26 @@ public class LocalSearch {
             B = BooleanMatrix.deepTranspose(B_T);
 
             // stop when our solution is locally optimal wrt to this neighbourhood.
-            System.out.print(" The recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
-            it = it +1;
-            System.out.println(it);
 
-            if (!improved|| it>1000){
-                System.out.print(" The final recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
-                break;
+            if(it%1==0) {
+                System.out.println(" The recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B), 1d)));
             }
 
+            it = it +1;
+
+            if (!improved){
+                System.out.println(" The final recon error is: " + Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B),1d)));
+                break;
+            }
 
         }
 
 
     }
 
+    // Find the best descent direction.
+    public void steepestDescent(){
+
+    }
 
 }
