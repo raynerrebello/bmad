@@ -1,5 +1,5 @@
 # Compiled class file
-*.class
+*/*.class
 
 # Log file
 *.log
@@ -25,3 +25,7 @@ hs_err_pid*
 #Ignore generated Intellij folder.
 .idea/
 
+#Ignore text and xlsx files from test cases.
+
+*/*.txt
+*/*.xlsx
