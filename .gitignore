@@ -1,5 +1,6 @@
 # Compiled class file
-*/*.class
+**/*.class
+*.class
 
 # Log file
 *.log
@@ -27,5 +28,5 @@ hs_err_pid*
 
 #Ignore text and xlsx files from test cases.
 
-*/*.txt
-*/*.xlsx
+**/*.txt
+**/*.xlsx
