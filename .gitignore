@@ -24,8 +24,14 @@ hs_err_pid*
 
 #Ignore generated Intellij folder.
 .idea/
+*.iml
 
 #Ignore text and xlsx files from test cases.
 
-*/*.txt
-*/*.xlsx
+*.txt
+*.xlsx
+*.csv
+
+target
+
+**/CathyLocal/
