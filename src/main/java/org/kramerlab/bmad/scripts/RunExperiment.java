@@ -12,6 +12,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import static java.lang.Math.max;
+import java. util.*;
+
 
 /**
  * Comparing reconstruction error and runtime among: 1) different algorithms, 2) different tau values, 3) with OR vs. XOR in BooleanProduct function.
@@ -23,6 +25,7 @@ public class RunExperiment {
     public static double density = 0.3;
     public static int dim = 10;
     public static double assocThreshold = 0.25;
+    public static int numRestarts = 3;
 
     public static void main(String[] args){ 
 
@@ -43,7 +46,7 @@ public class RunExperiment {
      * returns a weka instance from data file
      */
 
-    private static Instances matrixFromFile(){
+    public static Instances matrixFromFile(){
         for(String file:new String[]{
                 // "datasets/kinase_labels.arff",
                 // "datasets/labels.nci.disc.noid.arff",
@@ -75,7 +78,7 @@ public class RunExperiment {
      * with specified height, width, density.
      */
 
-    private static Instances matrixFromRandGen(int height, int width, double density) {
+    public static Instances matrixFromRandGen(int height, int width, double density) {
         BooleanMatrix randMatrixA = RandomMatrixGeneration.randomMatrix(height, width, density,0);
         Instances b = randMatrixA.toInstances();
         return b;
@@ -87,10 +90,14 @@ public class RunExperiment {
      * different DBP-based sub-alrogithms on boolean matrix decomposition.
      */
 
-    private static void decompositionTest(Instances instances, int dim, double assocThreshold) {
+    public static void decompositionTest(Instances instances, int dim, double assocThreshold) {
+
+        BooleanMatrix matrixA = new BooleanMatrix(instances);
 
         // creating different decomposition algorithms
         // in same sequence as in BooleanMatrixDecomposition
+
+        LocalSearch localSearch = new LocalSearch(instances, dim);
 
         BooleanMatrixDecomposition algorithm_LocIter =
                 new BooleanMatrixDecomposition(
@@ -116,6 +123,8 @@ public class RunExperiment {
 
 
 
+
+
         // Create new file name, write the current call's date, time to differentiate from others
 
         long timeMilli = System.currentTimeMillis();
@@ -123,7 +132,7 @@ public class RunExperiment {
 
 
         // Create new CSV file with unique file name, crate header row.
-        String header = String.format("Date/Time, Height, Width, Density, Dimension, AssocThreshold, Tau, Algorithm, ReconError_OR, ReconError_XOR, Runtime(nanoSec)%n");
+        String header = String.format("Date/Time, Height, Width, Density, Dimension, AssocThreshold, Tau, Algorithm, ReconError_OR, ReconError_XOR, Runtime_OR(nanoSec), Runtime_XOR(nanoSec)%n");
         writeResults(header, FILENAME);
 
 
@@ -195,11 +204,58 @@ public class RunExperiment {
 
 
                 // write results into file, one case per row.
-                String result = String.format("%s /%s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
-                        height, width, density, dim, assocThreshold, tau, algorithm, reconErrorOR, reconErrorXOR, totalTime);
+                String result = String.format("%s /%s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+                        height, width, density, dim, assocThreshold, tau, algorithm, reconErrorOR, reconErrorXOR, totalTime, totalTime);
 
                 writeResults(result, FILENAME);
 
+                }
+
+            // -----------------------------------------
+            // For each iteration, also run all versions of LocalSearch decompositions and write for comparison:
+            // -----------------------------------------
+
+            // Using nextDescent, with OR, then with XOR
+
+            ArrayList<Tuple> output = new ArrayList<Tuple>();
+            ArrayList<String> names = new ArrayList<String>();
+
+            output.add(localSearch.decomposeWithRuntime(1, false));
+            names.add("nextDescent");
+            output.add(localSearch.decomposeWithRuntime(1, true));
+            names.add("nextDescent");
+
+            output.add(localSearch.decomposeWithRuntime(2, false));
+            names.add("steepDescent");
+            output.add(localSearch.decomposeWithRuntime(2, true));
+            names.add("steepDescent");
+
+            output.add(localSearch.decomposeWithRuntime(3, numRestarts, true, false));
+            names.add(String.format("randRestart_%d_ND", numRestarts));
+            output.add(localSearch.decomposeWithRuntime(3, numRestarts, true, true));
+            names.add(String.format("randRestart_%d_ND", numRestarts));
+
+            output.add(localSearch.decomposeWithRuntime(3, numRestarts, false, false));
+            names.add(String.format("randRestart_%d_SD", numRestarts));
+            output.add(localSearch.decomposeWithRuntime(3, numRestarts, false, true));
+            names.add(String.format("randRestart_%d_SD", numRestarts));
+
+
+
+            for(int i = 0; i < output.size(); i = i + 2){
+                Tuple result_or = output.get(i);
+                Tuple result_xor = output.get(i + 1);
+
+                String error_or = result_or._1.toString();
+                String runtime_or = result_or.get_2().toString();
+
+                String error_xor = result_xor.get_1().toString();
+                String runtime_xor = result_xor.get_2().toString();
+                String name = names.get(i);
+
+
+                writeResults(String.format("%s /%s, %d, %d, %f, %d, %f, %f, %s, %s, %s, %s, %s%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+                        height, width, density, dim, assocThreshold, tau, name, error_or, error_xor, runtime_or, runtime_xor), FILENAME);
             }
         }
     }
