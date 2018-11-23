@@ -247,10 +247,10 @@ public class RunExperiment {
                 Tuple result_xor = output.get(i + 1);
 
                 String error_or = result_or._1.toString();
-                String runtime_or = result_or.get_2().toString();
+                String runtime_or = result_or._2.toString();
 
-                String error_xor = result_xor.get_1().toString();
-                String runtime_xor = result_xor.get_2().toString();
+                String error_xor = result_xor._1.toString();
+                String runtime_xor = result_xor._2.toString();
                 String name = names.get(i);
 
 
