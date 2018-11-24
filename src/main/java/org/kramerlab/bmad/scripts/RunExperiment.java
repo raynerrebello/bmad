@@ -1,5 +1,6 @@
 package org.kramerlab.bmad.scripts;
 
+import org.kramerlab.bmad.CathyLocal.MatrixFromFile;
 import org.kramerlab.bmad.algorithms.*;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
@@ -23,22 +24,23 @@ public class RunExperiment {
     public static int height = 100;
     public static int width = 20;
     public static double density = 0.3;
-    public static int dim = 10;
+    public static int dim = 2;
     public static double assocThreshold = 0.25;
     public static int numRestarts = 3;
 
-    public static void main(String[] args){ 
+    public static void main(String[] args)throws Exception{
 
-        Instances a = matrixFromFile();
+//        Instances a = matrixFromFile();
 //        System.out.printf("A: %n%s%n%n", a);
 
-        Instances b = matrixFromRandGen(height, width, density);
+//        Instances b = matrixFromRandGen(height, width, density);
 //        System.out.printf("B: %n%s%n%n", b);
+        BooleanMatrix matrixC = MatrixFromFile.convert("Book1.csv", ",");
+        Instances c = matrixC.toInstances();
+//        System.out.println(matrixC);
 
-        decompositionTest(b,dim, assocThreshold);
-
+        decompositionTest(c,dim, assocThreshold);
         }
-
 
 
 
