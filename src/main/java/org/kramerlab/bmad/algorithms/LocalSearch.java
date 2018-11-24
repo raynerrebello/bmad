@@ -198,15 +198,15 @@ public class LocalSearch {
             B = BooleanMatrix.deepTranspose(B_T);
 
             if(it%1==0) {
-                System.out.println("The recon-error is: " +
-                        Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B, xor), 1d)));
+//                System.out.println("The recon-error is: " +
+//                        Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B, xor), 1d)));
             }
             it = it +1;
 
             // stop when our solution is locally optimal wrt to this neighbourhood.
             if (!improved){
                 relativeRecError = this.C.relativeReconstructionError(S.booleanProduct(B, xor),1d);
-                System.out.println("The final-recon error is: " + relativeRecError);
+//                System.out.println("The final-recon error is: " + relativeRecError);
                 break;
             }
         }
