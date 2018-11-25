@@ -132,7 +132,7 @@ public class LocalSearch {
         double relativeRecError;
 
         boolean improved = false;
-        double density = this.C.getDensity();
+        double density = Math.sqrt(this.C.getDensity());
         BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);
 
         // Combination matrix
@@ -197,10 +197,10 @@ public class LocalSearch {
             S = BooleanMatrix.deepTranspose(S_T);
             B = BooleanMatrix.deepTranspose(B_T);
 
-            if(it%1==0) {
-                System.out.println("The recon-error is: " +
-                        Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B, xor), 1d)));
-            }
+//            if(it%1==0) {
+//                System.out.println("The recon-error is: " +
+//                        Double.toString(this.C.relativeReconstructionError(S.booleanProduct(B, xor), 1d)));
+//            }
             it = it +1;
 
             // stop when our solution is locally optimal wrt to this neighbourhood.
@@ -308,11 +308,11 @@ public class LocalSearch {
 
             it = it +1;
 
-            if(it % 100 == 0) {
-                relativeRecError = this.C.relativeReconstructionError(S.booleanProduct(B, xor), 1d);
+//            if(it % 1 == 0) {
+//                relativeRecError = this.C.relativeReconstructionError(S.booleanProduct(B, xor), 1d);
 //                System.out.println("The current recon-error is: " + relativeRecError);
-
-            }
+//
+//            }
 
             if (!(best_i < 0)){
                 if(flipS == true){
@@ -355,7 +355,7 @@ public class LocalSearch {
         }
 
 
-//        System.out.printf("Using %s, %s, Best_recon = %f%n",  xor? "XOR": " OR", nextDescent? "nextDescent": "steepDescent", best_recon);
+        System.out.printf("Using %s, %s, Best_recon = %f%n",  xor? "XOR": " OR", nextDescent? "nextDescent": "steepDescent", best_recon);
         return best_recon;
     }
 
