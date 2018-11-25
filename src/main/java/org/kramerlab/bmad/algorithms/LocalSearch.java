@@ -1,6 +1,5 @@
 package org.kramerlab.bmad.algorithms;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 import org.kramerlab.bmad.matrix.RandomMatrixGeneration;
