@@ -1,5 +1,4 @@
 package org.kramerlab.bmad.scripts;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.kramerlab.bmad.algorithms.BooleanMatrixDecomposition;
 import org.kramerlab.bmad.algorithms.LocalSearch;
 import org.kramerlab.bmad.general.Tuple;
