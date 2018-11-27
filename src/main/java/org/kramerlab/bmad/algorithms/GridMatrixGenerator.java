@@ -32,7 +32,7 @@ public class GridMatrixGenerator {
 
         System.out.println("\n\n\n");
         int numSquarePerRow = 5;
-        int squareDim = 3;
+        int squareDim = 4;
         boolean ones3 = false;
         Test_getSquareChessBoard (numSquarePerRow, squareDim, ones3);
 
@@ -46,7 +46,7 @@ public class GridMatrixGenerator {
         try {
             BooleanMatrix output = getCentredFramedGrid(blockHeight, blockWidth, numRowFromBlock, numColFromBlock, ones);
             System.out.println(output);
-        } catch (MyException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
     }
@@ -57,7 +57,7 @@ public class GridMatrixGenerator {
         try {
             BooleanMatrix output = getAnyFramedGrid(totalHeight, totalWidth, endpoints, ones);
             System.out.println(output);
-        } catch (MyException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
     }
@@ -82,11 +82,11 @@ public class GridMatrixGenerator {
      * @param numRowFromBlock: number of rows above and below the block.
      * @param numColFromBlock: number of cols on both sides of the block.
      * @param ones: fill-value (true = (byte) 3, false = (byte) 0).
-     * @return: 2D byte array.
-     * @throws MyException
+     * @return: BooleanMatrix object.
+     * @throws IllegalArgumentException
      */
 
-    public static BooleanMatrix getCentredFramedGrid (int blockHeight, int blockWidth, int numRowFromBlock, int numColFromBlock, boolean ones) throws MyException{
+    public static BooleanMatrix getCentredFramedGrid (int blockHeight, int blockWidth, int numRowFromBlock, int numColFromBlock, boolean ones) throws IllegalArgumentException{
         int totalHeight = blockHeight + 2 * numRowFromBlock;
         int totalWidth = blockWidth + 2 * numColFromBlock;
 
@@ -98,7 +98,7 @@ public class GridMatrixGenerator {
 
 
         if(numRowFromBlock > totalHeight || numColFromBlock > totalWidth){
-            throw new MyException("WARNING! The number of row / col from frame must be <= total height / width!");
+            throw new IllegalArgumentException("WARNING! The number of row / col from frame must be <= total height / width!");
         }else{
             for(int i = 0; i < totalHeight; i ++){
                 for(int j = 0; j < totalWidth; j ++){
@@ -124,10 +124,10 @@ public class GridMatrixGenerator {
      *                 [2] lower right corner - row #
      *                 [3] lower right corner - col #
      * @param ones: fill-value (true = (byte) 3, false = (byte) 0).
-     * @return 2D byte array.
-     * @throws MyException
+     * @return a BooleanMatrix object.
+     * @throws IllegalArgumentException if block boundary is outside the overalll matrix.
      */
-    public static BooleanMatrix getAnyFramedGrid (int totalHeight, int totalWidth, int[] endpoints, boolean ones) throws MyException{
+    public static BooleanMatrix getAnyFramedGrid (int totalHeight, int totalWidth, int[] endpoints, boolean ones) throws IllegalArgumentException{
         int upleft_r = endpoints[0];
         int upleft_c = endpoints[1];
         int lowright_r = endpoints[2];
@@ -140,9 +140,9 @@ public class GridMatrixGenerator {
         System.out.printf("Block position:  rows %d to %d, cols %d to %d%n%n", upleft_r, upleft_c, lowright_r,  lowright_c);
 
         if(endpoints.length != 4){
-            throw new MyException("WARNING! int[] endpoint takes exactly 4 integer values of the row-col coordinates for upper-left and lower-right corners of the center block!");
+            throw new IllegalArgumentException("WARNING! int[] endpoint takes exactly 4 integer values of the row-col coordinates for upper-left and lower-right corners of the center block!");
         } else if((upleft_r > lowright_r || upleft_c > lowright_c) || (upleft_r == lowright_r && upleft_c == lowright_c)){
-            throw new MyException("WARNING! upper-left coordinates must be both smaller than the lower-right corner coordinates!");
+            throw new IllegalArgumentException("WARNING! upper-left coordinates must be both smaller than the lower-right corner coordinates!");
         }else{
             for(int i = 0; i < totalHeight; i ++){
                 for(int j = 0; j < totalWidth; j ++){
@@ -162,8 +162,7 @@ public class GridMatrixGenerator {
      * @param numSquarePerRow: total number of unit squares per each col/ row.
      * @param squareDim: dimension of the unit square (k x k)
      * @param startOnes: starting unit fill = (if startOnes: (byte) 3), else: (byte) 0)
-     * @return 2D byte array.
-     * @throws MyException
+     * @return BooleanMatrix object
      */
 
     public static BooleanMatrix getSquareChessBoard (int numSquarePerRow, int squareDim, boolean startOnes){
@@ -181,7 +180,6 @@ public class GridMatrixGenerator {
             for (int j = 0; j < size; j++) {
                 toFill = ((j > 0 && j % (squareDim) == 0) ? !toFill : toFill); // only flip fill value when col > 0 and columns-done == block-width;
                 output[i][j] = ((toFill ? (byte) 3 : (byte) 0));
-//                System.out.printf("-------------------  i = %d, j = %d, toFill = %b%n", i, j, toFill);
             }
 
                 toFill = (numSquarePerRow % 2 == 0)? !toFill : toFill;  // if have even number of squares, flip again to start next row.
@@ -195,16 +193,3 @@ public class GridMatrixGenerator {
 }
 
 
-
-
-
-/**
- * Custom Exception.
- */
-
-class MyException extends Exception{
-    public MyException(String message)
-    {
-        super(message);
-    }
-}
