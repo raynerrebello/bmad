@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Reads  a file containing boolean values, returns a BooleanMatrix object.
  * Example of calling: BooleanMatrix b = MatrixFromFile.convert("Book1.csv", ",");
- */s
+ */
 
 public class MatrixFromFile {
 
