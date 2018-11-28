@@ -1,6 +1,5 @@
 package org.kramerlab.bmad.scripts;
 
-import org.kramerlab.bmad.CathyLocal.MatrixFromFile;
 import org.kramerlab.bmad.algorithms.*;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
@@ -11,35 +10,56 @@ import weka.core.converters.ConverterUtils.DataSource;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static java.lang.Math.max;
-import java.util.*;
 
 
 /**
  * Comparing reconstruction error and runtime among: 1) different algorithms, 2) different tau values, 3) with OR vs. XOR in BooleanProduct function.
  */
 public class RunExperiment {
-    
-    public static int height = 100;
-    public static int width = 20;
-    public static double density = 0.3;
-    public static int dim = 2;
-    public static double assocThreshold = 0.25;
-    public static int numRestarts = 3;
+    private static long timeMilli = System.currentTimeMillis();
+    private static final String FILENAME = String.format("results%s.csv",timeMilli);
+
+    private static int height = 50;
+    private static int width = 20;
+    private static double density = 0.3;
+    private static int dim = 2;
+    private static double assocThreshold = 0.25;
+    private static int numRestarts = 3;
+    private enum matrixType {matrixFromFile, matrixFromRandomGen, centredFramedMatrix, userDefinedFramedMatrix, squareChessBoard};
+
+
 
     public static void main(String[] args)throws Exception{
 
-//        Instances a = matrixFromFile();
-//        System.out.printf("A: %n%s%n%n", a);
+        Instances a = MatrixFromFile.convert("Book1.csv", ",").toInstances();
+        decompositionTest(matrixType.matrixFromFile.toString(), a, dim, assocThreshold);
 
-//        Instances b = matrixFromRandGen(height, width, density);
-//        System.out.printf("B: %n%s%n%n", b);
-        BooleanMatrix matrixC = MatrixFromFile.convert("Book1.csv", ",");
+        Instances b = matrixFromRandGen(height, width, density);
+        decompositionTest(matrixType.matrixFromRandomGen.toString(), b, dim, assocThreshold);
+
+
+        BooleanMatrix matrixC = GridMatrixGenerator.getCentredFramedGrid(3, 4, 3, 4, true);
+        GridMatrixGenerator.addNoiseToAll(matrixC, 0.2);
         Instances c = matrixC.toInstances();
-//        System.out.println(matrixC);
+        decompositionTest(matrixType.centredFramedMatrix.toString(), c,dim, assocThreshold);
 
-        decompositionTest(c,dim, assocThreshold);
+
+        BooleanMatrix matrixD = GridMatrixGenerator.getAnyFramedGrid(10, 20, new int[]{3, 2, 8, 15}, true);
+        GridMatrixGenerator.addNoiseToAll(matrixD, 0.2);
+        Instances d = matrixD.toInstances();
+        decompositionTest(matrixType.userDefinedFramedMatrix.toString(), d,dim, assocThreshold);
+
+
+
+        BooleanMatrix matrixE = GridMatrixGenerator.getSquareChessBoard(5, 3, false);
+        GridMatrixGenerator.addNoiseToAll(matrixE, 0.2);
+        Instances e = matrixE.toInstances();
+        decompositionTest(matrixType.squareChessBoard.toString(), e,dim, assocThreshold);
+
+
         }
 
 
@@ -88,11 +108,12 @@ public class RunExperiment {
 
 
 
+
     /**
      * different DBP-based sub-alrogithms on boolean matrix decomposition.
      */
 
-    public static void decompositionTest(Instances instances, int dim, double assocThreshold) {
+    public static void decompositionTest(String typeName, Instances instances, int dim, double assocThreshold){
 
         BooleanMatrix matrixA = new BooleanMatrix(instances);
 
@@ -129,12 +150,9 @@ public class RunExperiment {
 
         // Create new file name, write the current call's date, time to differentiate from others
 
-        long timeMilli = System.currentTimeMillis();
-        final String FILENAME = String.format("results%s.csv",timeMilli);
-
 
         // Create new CSV file with unique file name, crate header row.
-        String header = String.format("Date/Time, Height, Width, Density, Dimension, AssocThreshold, Tau, Algorithm, ReconError_OR, ReconError_XOR, Runtime_OR(nanoSec), Runtime_XOR(nanoSec)%n");
+        String header = String.format("Date/Time, MatrixTypeName, Height, Width, Density, Dimension, AssocThreshold, Tau, Algorithm, ReconError_OR, ReconError_XOR, Runtime_OR(nanoSec), Runtime_XOR(nanoSec)%n");
         writeResults(header, FILENAME);
 
 
@@ -172,13 +190,6 @@ public class RunExperiment {
                 Instances basisRows = t._2;
                 Instances learnableRepresentation = t._1;
 
-                // draw the result
-//            DecompositionLayout.showDecomposition(
-//                    " tau = " + tau,
-//                    instances,
-//                    learnableRepresentation,
-//                    basisRows
-//            );
 
                 // for calculation of errors,
                 // convert everything to boolean matrices again
@@ -186,35 +197,18 @@ public class RunExperiment {
                 BooleanMatrix b = new BooleanMatrix(basisRows);
                 BooleanMatrix c = new BooleanMatrix(learnableRepresentation);
 
-
                 double reconErrorOR = a.relativeReconstructionError(c.booleanProduct(b), 1d);
                 double reconErrorXOR = a.relativeReconstructionError(c.booleanProduct(b, true), 1d);
 
-                // write the reconstruction errors to result file and print to console
-
-//                String resultOR =  String.format("with  OR: Relative reconstruction error for tau = %f is %f, runtime = %d nanoSec.%n",
-//                        tau,a.relativeReconstructionError(c.booleanProduct(b), 1d),totalTime);
-//
-//                String resultXOR =  String.format("with XOR: Relative reconstruction error for tau = %f is %f, runtime = %d nanoSec.%n",
-//                        tau, a.relativeReconstructionError(c.booleanProduct(b, true), 1d), totalTime);
-//
-//                writeResults(resultOR, FILENAME);
-//                System.out.print(resultOR);
-//
-//                writeResults(resultXOR, FILENAME);
-//                System.out.print(resultXOR);
-
-
                 // write results into file, one case per row.
-                String result = String.format("%s /%s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
-                        height, width, density, dim, assocThreshold, tau, algorithm, reconErrorOR, reconErrorXOR, totalTime, totalTime);
+                String result = String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+                        typeName, height, width, density, dim, assocThreshold, tau, algorithm, reconErrorOR, reconErrorXOR, totalTime, totalTime);
 
                 writeResults(result, FILENAME);
-
                 }
 
             // -----------------------------------------
-            // For each iteration, also run all versions of LocalSearch decompositions and write for comparison:
+            // User LocalSearch - For each iteration, also run all versions of LocalSearch decompositions and write for comparison:
             // -----------------------------------------
 
             // Using nextDescent, with OR, then with XOR
@@ -256,8 +250,8 @@ public class RunExperiment {
                 String name = names.get(i);
 
 
-                writeResults(String.format("%s /%s, %d, %d, %f, %d, %f, %f, %s, %s, %s, %s, %s%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
-                        height, width, density, dim, assocThreshold, tau, name, error_or, error_xor, runtime_or, runtime_xor), FILENAME);
+                writeResults(String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %s, %s, %s, %s%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+                        typeName, height, width, density, dim, assocThreshold, tau, name, error_or, error_xor, runtime_or, runtime_xor), FILENAME);
             }
         }
     }
