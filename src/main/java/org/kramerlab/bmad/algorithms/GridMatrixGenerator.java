@@ -2,6 +2,10 @@ package org.kramerlab.bmad.algorithms;
 
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 
+import javax.swing.text.StyledEditorKit;
+import java.util.ArrayList;
+import java.util.Random;
+
 /**
  * Generates special matrices including:
  *      framed matrix, chessboard matrix, or user-specified matrices with grids of 1s and 0s (with optional noise as flipped values).
@@ -22,6 +26,8 @@ public class GridMatrixGenerator {
         int numColFromBlock = 3;
         boolean ones1 = false;
         Test_getCentredFramedGrid(blockHeight, blockWidth, numRowFromBlock, numColFromBlock, ones1);
+
+
 
         System.out.println("\n\n\n");
         int totalHeight = 15;
@@ -46,6 +52,10 @@ public class GridMatrixGenerator {
         try {
             BooleanMatrix output = getCentredFramedGrid(blockHeight, blockWidth, numRowFromBlock, numColFromBlock, ones);
             System.out.println(output);
+
+            addNoiseToAll(output, 0.3);
+            System.out.printf("%n%n%s", output);
+
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
@@ -57,6 +67,10 @@ public class GridMatrixGenerator {
         try {
             BooleanMatrix output = getAnyFramedGrid(totalHeight, totalWidth, endpoints, ones);
             System.out.println(output);
+
+            addNoiseToAll(output, 0.3);
+            System.out.printf("%n%n%s", output);
+
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
@@ -67,6 +81,9 @@ public class GridMatrixGenerator {
 
         BooleanMatrix output = getSquareChessBoard (numSquarePerRow, squareDim, startOnes);
         System.out.println(output);
+
+        addNoiseToAll(output, 0.3);
+        System.out.printf("%n%n%s", output);
     }
 
     //---------------------------3 test methods --------------------------------------------------------------------
@@ -76,7 +93,7 @@ public class GridMatrixGenerator {
 
 
     /**
-     * Returns a 2D byte array with a block at user-specified location filled with opposite value as the frame.
+     * Returns a BooleanMatrix object with a block at user-specified location filled with opposite value as the frame.
      * @param blockHeight: number of rows of the centre block.
      * @param blockWidth: number of cols of the centre block.
      * @param numRowFromBlock: number of rows above and below the block.
@@ -94,6 +111,9 @@ public class GridMatrixGenerator {
         byte valFill = (ones)? (byte) 3 : (byte) 0;
         byte valFrame = (ones)? (byte) 0: (byte) 3;
 
+        System.out.printf("------------ Called getCentredFramedGrid ------------%n");
+        System.out.printf("Matrix height = %d, width = %d, block height = %d, block width = %d, %d rows from top/bottom, %d cols from sides%n",
+                totalHeight, totalWidth, blockHeight, blockWidth, numRowFromBlock, numColFromBlock);
         System.out.printf("Block position:  rows %d to %d, cols %d to %d%n%n", numRowFromBlock, blockHeight + numRowFromBlock, blockWidth, blockWidth + numColFromBlock);
 
 
@@ -115,7 +135,7 @@ public class GridMatrixGenerator {
 
 
     /**
-     * Returns a 2D byte array with a block at user-specified location filled with opposite value as the frame.
+     * Returns a BooleanMatrix object with a block at user-specified location filled with opposite value as the frame.
      * @param totalHeight
      * @param totalWidth
      * @param endpoints: upper left and lower right coordinates of the center grid:
@@ -137,6 +157,11 @@ public class GridMatrixGenerator {
         byte valFill = (ones)? (byte) 3 : (byte) 0;
         byte valFrame = (ones)? (byte) 0: (byte) 3;
 
+        int blockHeight = endpoints[3] - endpoints[1];
+        int blockWidth = endpoints[2] - endpoints[0];
+
+        System.out.printf("------------ Called getAnyFramedGrid ------------%n");
+        System.out.printf("Matrix height = %d, width = %d, block height = %d, block width = %d%n", totalHeight, totalWidth, blockHeight, blockWidth);
         System.out.printf("Block position:  rows %d to %d, cols %d to %d%n%n", upleft_r, upleft_c, lowright_r,  lowright_c);
 
         if(endpoints.length != 4){
@@ -172,7 +197,9 @@ public class GridMatrixGenerator {
 
         byte[][] output = new byte[size][size];
 
-        System.out.printf("Chessboard setting:  # of blocks = %d, each block is %d by %d, starting with startOnes = %b%n%n", numSquarePerRow, squareDim, squareDim, startOnes);
+        System.out.printf("------------ Called getSquareChessBoard ------------%n");
+        System.out.printf("Chessboard setting:  # of blocks = %d, each block is %d by %d, starting with startOnes = %b%n%n",
+                numSquarePerRow, squareDim, squareDim, startOnes);
 
         for(int i = 0; i < size; i ++) {
             toFill = ((i > 0 && i % (squareDim) == 0) ? !toFill : toFill);  // only flip fill value when row > 0 and rows-done == block-height;
@@ -186,6 +213,47 @@ public class GridMatrixGenerator {
         }
         return new BooleanMatrix(output);
     }
+
+
+
+    /**
+     * In-place method. Adds noise to the WHOLE matrix by randomly flipping value in n% of all cells.
+     * @param matrix: a BooleanMatrix object.
+     * @param noiseRatio: percentage of noise out of all cells as a floating point number.
+     */
+
+    public static void addNoiseToAll(BooleanMatrix matrix, double noiseRatio) {
+        int height = matrix.getHeight();
+        int width = matrix.getWidth();
+
+        System.out.printf("%n................addNoiseToAll called.%nPerceived matrix height = %d, width = %d%n", height, width);
+
+        int numNoise = (int) Math.round(height * width * noiseRatio);
+        System.out.printf("NoiseRatio = %f, number of cells to flip as noise: %d%n", noiseRatio, numNoise);
+
+        Random randGenerator = new Random();
+        ArrayList<String> randNumList = new ArrayList<String>();
+
+        int x, y;
+
+        for (int j = 0; j < numNoise; j++) {
+            x = randGenerator.nextInt(height);
+            y = randGenerator.nextInt(width);
+
+            String xy = String.valueOf(x) + String.valueOf(y);
+
+            // if duplicate, regenerate random pair of coordinates, else flip the value in grid[x][y].
+            if (randNumList.contains(xy)) {
+                x = randGenerator.nextInt(height);
+                y = randGenerator.nextInt(width);
+            } else {
+//                matrix.update(x, y, matrix.not(matrix.apply(x, y)));
+                matrix.update(x, y, matrix.not(matrix.apply(x, y)));
+            }
+                randNumList.add(xy);
+            }
+        }
+
 
 
 
