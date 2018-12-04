@@ -1,6 +1,6 @@
 package org.kramerlab.bmad.scripts;
 
-import org.kramerlab.bmad.CathyLocal.MatrixFromFile;
+import org.kramerlab.bmad.scripts.MatrixFromFile;
 import org.kramerlab.bmad.algorithms.*;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;

@@ -164,7 +164,7 @@ public class LocalSearchReturnMatrix {
             // stop when our solution is locally optimal wrt to this neighbourhood.
             if (!improved){
                 relativeRecError = this.C.relativeReconstructionError(S.booleanProduct(B, xor),1d);
-//                System.out.println("The final-recon error is: " + relativeRecError);
+                //System.out.println("The final-recon error is: " + relativeRecError);
                 break;
             }
         }
