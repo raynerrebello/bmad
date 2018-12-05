@@ -1,9 +1,5 @@
 package org.kramerlab.bmad.scripts;
 
-<<<<<<< HEAD
-import org.kramerlab.bmad.scripts.MatrixFromFile;
-=======
->>>>>>> 4b64e1b1599f59f8ecc199a4e52b76050d03c170
 import org.kramerlab.bmad.algorithms.*;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
@@ -23,48 +19,51 @@ import static java.lang.Math.max;
  * Comparing reconstruction error and runtime among: 1) different algorithms, 2) different tau values, 3) with OR vs. XOR in BooleanProduct function.
  */
 public class RunExperiment {
-    private static long timeMilli = System.currentTimeMillis();
-    private static final String FILENAME = String.format("results%s.csv",timeMilli);
+//    private static long timeMilli = System.currentTimeMillis();
+//    private static final String FILENAME = String.format("results%s.csv",timeMilli);
 
-    private static int height = 50;
-    private static int width = 20;
-    private static double density = 0.3;
-    private static int dim = 2;
-    private static double assocThreshold = 0.25;
+//    private static int height = 50;
+//    private static int width = 20;
+//    private static double density = 0.3;
+//    private static int dim = 2;
+//    private static double assocThreshold = 0.25;
     private static int numRestarts = 3;
-    private enum matrixType {matrixFromFile, matrixFromRandomGen, centredFramedMatrix, userDefinedFramedMatrix, squareChessBoard};
+    public enum matrixType {matrixFromFile, matrixFromRandomGen, centredFramedMatrix, userDefinedFramedMatrix, squareChessBoard};
 
 
 
-    public static void main(String[] args)throws Exception{
-
-        Instances a = MatrixFromFile.convert("Book1.csv", ",").toInstances();
-        decompositionTest(matrixType.matrixFromFile.toString(), a, dim, assocThreshold);
-
-        Instances b = matrixFromRandGen(height, width, density);
-        decompositionTest(matrixType.matrixFromRandomGen.toString(), b, dim, assocThreshold);
-
-
-        BooleanMatrix matrixC = GridMatrixGenerator.getCentredFramedGrid(3, 4, 3, 4, true);
-        GridMatrixGenerator.addNoiseToAll(matrixC, 0.2);
-        Instances c = matrixC.toInstances();
-        decompositionTest(matrixType.centredFramedMatrix.toString(), c,dim, assocThreshold);
-
-
-        BooleanMatrix matrixD = GridMatrixGenerator.getAnyFramedGrid(10, 20, new int[]{3, 2, 8, 15}, true);
-        GridMatrixGenerator.addNoiseToAll(matrixD, 0.2);
-        Instances d = matrixD.toInstances();
-        decompositionTest(matrixType.userDefinedFramedMatrix.toString(), d,dim, assocThreshold);
-
-
-
-        BooleanMatrix matrixE = GridMatrixGenerator.getSquareChessBoard(5, 3, false);
-        GridMatrixGenerator.addNoiseToAll(matrixE, 0.2);
-        Instances e = matrixE.toInstances();
-        decompositionTest(matrixType.squareChessBoard.toString(), e,dim, assocThreshold);
-
-
-        }
+//    public static void main(String[] args)throws Exception{
+//
+//        long timeMilli = System.currentTimeMillis();
+//        final String FILENAME = String.format("results%s.csv",timeMilli);
+//
+//        Instances a = MatrixFromFile.convert("Book1.csv", ",").toInstances();
+//        decompositionTest(FILENAME, matrixType.matrixFromFile.toString(), a, dim, assocThreshold);
+//
+//        Instances b = matrixFromRandGen(height, width, density);
+//        decompositionTest(FILENAME, matrixType.matrixFromRandomGen.toString(), b, dim, assocThreshold);
+//
+//
+//        BooleanMatrix matrixC = GridMatrixGenerator.getCentredFramedGrid(3, 4, 3, 4, true);
+//        GridMatrixGenerator.addNoiseToAll(matrixC, 0.2);
+//        Instances c = matrixC.toInstances();
+//        decompositionTest(FILENAME, matrixType.centredFramedMatrix.toString(), c,dim, assocThreshold);
+//
+//
+//        BooleanMatrix matrixD = GridMatrixGenerator.getAnyFramedGrid(10, 20, new int[]{3, 2, 8, 15}, true);
+//        GridMatrixGenerator.addNoiseToAll(matrixD, 0.2);
+//        Instances d = matrixD.toInstances();
+//        decompositionTest(FILENAME, matrixType.userDefinedFramedMatrix.toString(), d,dim, assocThreshold);
+//
+//
+//
+//        BooleanMatrix matrixE = GridMatrixGenerator.getSquareChessBoard(5, 3, false);
+//        GridMatrixGenerator.addNoiseToAll(matrixE, 0.2);
+//        Instances e = matrixE.toInstances();
+//        decompositionTest(FILENAME, matrixType.squareChessBoard.toString(), e,dim, assocThreshold);
+//
+//
+//        }
 
 
 
@@ -117,9 +116,12 @@ public class RunExperiment {
      * different DBP-based sub-alrogithms on boolean matrix decomposition.
      */
 
-    public static void decompositionTest(String typeName, Instances instances, int dim, double assocThreshold){
+    public static void decompositionTest(String FILENAME, String typeName, Instances instances, int dim, double assocThreshold){
 
         BooleanMatrix matrixA = new BooleanMatrix(instances);
+        int height = matrixA.getHeight();
+        int width = matrixA.getWidth();
+        double density = matrixA.getDensity();
 
         // creating different decomposition algorithms
         // in same sequence as in BooleanMatrixDecomposition
@@ -163,7 +165,9 @@ public class RunExperiment {
 
         // Run decomposition with various tau value, on each algorithm, with BooleanProduct using both OR and XOR
 
-        for (double tau = 0.15; tau < 0.35; tau += 0.01) {
+//        for (double tau = 0.15; tau < 0.35; tau += 0.01) {
+        double tau = 0.3;
+
 //            String tauInfo = String.format("%n%n%n--------------------------- tau = %f ------------------------------%n", tau);
 //            System.out.print(tauInfo);
 //            writeResults(tauInfo, FILENAME);
@@ -173,9 +177,9 @@ public class RunExperiment {
             for (int pos = 0; pos < allAlgorithms.length; pos++) {
                 BooleanMatrixDecomposition algorithm = allAlgorithms[pos];
 
-//                String currentAlgorithm = String.format("%nAlgorithm used: %s%n", allAlgorithms[pos]);
+                String currentAlgorithm = String.format("%n%s, Algorithm used: %s%n", java.time.LocalTime.now(), allAlgorithms[pos]);
 //                writeResults(currentAlgorithm, FILENAME);
-//                System.out.printf(currentAlgorithm);
+                System.out.printf(currentAlgorithm);
 
 
                 // decompose
@@ -225,20 +229,20 @@ public class RunExperiment {
             output.add(localSearch.decomposeWithRuntime(1, true));
             names.add("nextDescent");
 
-            output.add(localSearch.decomposeWithRuntime(2, false));
-            names.add("steepDescent");
-            output.add(localSearch.decomposeWithRuntime(2, true));
-            names.add("steepDescent");
+//            output.add(localSearch.decomposeWithRuntime(2, false));
+//            names.add("steepDescent");
+//            output.add(localSearch.decomposeWithRuntime(2, true));
+//            names.add("steepDescent");
 
             output.add(localSearch.decomposeWithRuntime(3, numRestarts, true, false));
             names.add(String.format("randRestart_%d_ND", numRestarts));
             output.add(localSearch.decomposeWithRuntime(3, numRestarts, true, true));
             names.add(String.format("randRestart_%d_ND", numRestarts));
 
-            output.add(localSearch.decomposeWithRuntime(3, numRestarts, false, false));
-            names.add(String.format("randRestart_%d_SD", numRestarts));
-            output.add(localSearch.decomposeWithRuntime(3, numRestarts, false, true));
-            names.add(String.format("randRestart_%d_SD", numRestarts));
+//            output.add(localSearch.decomposeWithRuntime(3, numRestarts, false, false));
+//            names.add(String.format("randRestart_%d_SD", numRestarts));
+//            output.add(localSearch.decomposeWithRuntime(3, numRestarts, false, true));
+//            names.add(String.format("randRestart_%d_SD", numRestarts));
 
 
 
@@ -258,7 +262,7 @@ public class RunExperiment {
                         typeName, height, width, density, dim, assocThreshold, tau, name, error_or, error_xor, runtime_or, runtime_xor), FILENAME);
             }
         }
-    }
+//    }
 
 
 
