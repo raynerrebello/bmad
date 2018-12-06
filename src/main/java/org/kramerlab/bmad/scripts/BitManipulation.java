@@ -1,6 +1,5 @@
 package org.kramerlab.bmad.scripts;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.kramerlab.bmad.algorithms.LocalSearchReturnMatrix;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;

@@ -1,6 +1,5 @@
 package org.kramerlab.bmad.scripts;
 
-import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 import java.io.*;
 import java.io.FileOutputStream;

@@ -1,5 +1,6 @@
 package org.kramerlab.bmad.scripts;
 
+import org.kramerlab.bmad.CathyLocal.XORDecomposeWithPrint;
 import org.kramerlab.bmad.algorithms.*;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
@@ -10,7 +11,6 @@ import weka.core.converters.ConverterUtils.DataSource;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import static java.lang.Math.max;
 
@@ -116,7 +116,7 @@ public class RunExperiment {
      * different DBP-based sub-alrogithms on boolean matrix decomposition.
      */
 
-    public static void decompositionTest(String FILENAME, String typeName, Instances instances, int dim, double assocThreshold){
+    public static void decompositionTest(String FILENAME, String typeName, Instances instances, int dim, double assocThreshold) {
 
         BooleanMatrix matrixA = new BooleanMatrix(instances);
         int height = matrixA.getHeight();
@@ -151,16 +151,12 @@ public class RunExperiment {
         BooleanMatrixDecomposition algorithm_BestConfigured = BooleanMatrixDecomposition.BEST_CONFIGURED(assocThreshold);
 
 
-
-
-
         // Create new file name, write the current call's date, time to differentiate from others
 
 
         // Create new CSV file with unique file name, crate header row.
         String header = String.format("Date/Time, MatrixTypeName, Height, Width, Density, Dimension, AssocThreshold, Tau, Algorithm, ReconError_OR, ReconError_XOR, Runtime_OR(nanoSec), Runtime_XOR(nanoSec)%n");
         writeResults(header, FILENAME);
-
 
 
         // Run decomposition with various tau value, on each algorithm, with BooleanProduct using both OR and XOR
@@ -172,96 +168,141 @@ public class RunExperiment {
 //            System.out.print(tauInfo);
 //            writeResults(tauInfo, FILENAME);
 
-            BooleanMatrixDecomposition allAlgorithms[] = {algorithm_LocIter, algorithm_DBP, algorithm_BEST_UNCONFIGURED, algorithm_BestConfigured};
+        BooleanMatrixDecomposition allAlgorithms[] = {algorithm_LocIter, algorithm_DBP, algorithm_BEST_UNCONFIGURED, algorithm_BestConfigured};
 
-            for (int pos = 0; pos < allAlgorithms.length; pos++) {
-                BooleanMatrixDecomposition algorithm = allAlgorithms[pos];
 
-                String currentAlgorithm = String.format("%n%s, Algorithm used: %s%n", java.time.LocalTime.now(), allAlgorithms[pos]);
+        for (int pos = 0; pos < allAlgorithms.length; pos++) {
+            BooleanMatrixDecomposition algorithm = allAlgorithms[pos];
+
+            String currentAlgorithm = String.format("%n%s, Algorithm used: %s%n", java.time.LocalTime.now(), allAlgorithms[pos]);
 //                writeResults(currentAlgorithm, FILENAME);
-                System.out.printf(currentAlgorithm);
+            System.out.printf(currentAlgorithm);
 
 
-                // decompose
+            // decompose
 
-                // starting time - for computing run-time
-                long startTime = System.nanoTime();
+            // starting time - for computing run-time
+            long startTime = System.nanoTime();
 
-                Tuple<Instances, Instances> t = algorithm.decompose(instances,
-                        max(instances.numAttributes() / 100, dim));
+            Tuple<Instances, Instances> t = algorithm.decompose(instances,
+                    max(instances.numAttributes() / 100, dim));
 
-                long stopTime = System.nanoTime();
-                long totalTime = stopTime - startTime;
+            long stopTime = System.nanoTime();
+            long totalTime = stopTime - startTime;
 
-                // notice, that the decompose() method is "the right way round",
-                // from Weka's point of view
-                Instances basisRows = t._2;
-                Instances learnableRepresentation = t._1;
-
-
-                // for calculation of errors,
-                // convert everything to boolean matrices again
-                BooleanMatrix a = new BooleanMatrix(instances);
-                BooleanMatrix b = new BooleanMatrix(basisRows);
-                BooleanMatrix c = new BooleanMatrix(learnableRepresentation);
-
-                double reconErrorOR = a.relativeReconstructionError(c.booleanProduct(b), 1d);
-                double reconErrorXOR = a.relativeReconstructionError(c.booleanProduct(b, true), 1d);
-
-                // write results into file, one case per row.
-                String result = String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
-                        typeName, height, width, density, dim, assocThreshold, tau, algorithm, reconErrorOR, reconErrorXOR, totalTime, totalTime);
-
-                writeResults(result, FILENAME);
-                }
-
-            // -----------------------------------------
-            // User LocalSearch - For each iteration, also run all versions of LocalSearch decompositions and write for comparison:
-            // -----------------------------------------
-
-            // Using nextDescent, with OR, then with XOR
-
-            ArrayList<Tuple> output = new ArrayList<Tuple>();
-            ArrayList<String> names = new ArrayList<String>();
-
-            output.add(localSearch.decomposeWithRuntime(1, false));
-            names.add("nextDescent");
-            output.add(localSearch.decomposeWithRuntime(1, true));
-            names.add("nextDescent");
-
-//            output.add(localSearch.decomposeWithRuntime(2, false));
-//            names.add("steepDescent");
-//            output.add(localSearch.decomposeWithRuntime(2, true));
-//            names.add("steepDescent");
-
-            output.add(localSearch.decomposeWithRuntime(3, numRestarts, true, false));
-            names.add(String.format("randRestart_%d_ND", numRestarts));
-            output.add(localSearch.decomposeWithRuntime(3, numRestarts, true, true));
-            names.add(String.format("randRestart_%d_ND", numRestarts));
-
-//            output.add(localSearch.decomposeWithRuntime(3, numRestarts, false, false));
-//            names.add(String.format("randRestart_%d_SD", numRestarts));
-//            output.add(localSearch.decomposeWithRuntime(3, numRestarts, false, true));
-//            names.add(String.format("randRestart_%d_SD", numRestarts));
+            // notice, that the decompose() method is "the right way round",
+            // from Weka's point of view
+            Instances basisRows = t._2;
+            Instances learnableRepresentation = t._1;
 
 
+            // for calculation of errors,
+            // convert everything to boolean matrices again
+            BooleanMatrix a = new BooleanMatrix(instances);
+            BooleanMatrix b = new BooleanMatrix(basisRows);
+            BooleanMatrix c = new BooleanMatrix(learnableRepresentation);
 
-            for(int i = 0; i < output.size(); i = i + 2){
-                Tuple result_or = output.get(i);
-                Tuple result_xor = output.get(i + 1);
+            double reconErrorOR = a.relativeReconstructionError(c.booleanProduct(b), 1d);
+            double reconErrorXOR = a.relativeReconstructionError(c.booleanProduct(b, true), 1d);
 
-                String error_or = result_or._1.toString();
-                String runtime_or = result_or._2.toString();
+            // write results into file, one case per row.
+            String result = String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+                    typeName, height, width, density, dim, assocThreshold, tau, algorithm, reconErrorOR, reconErrorXOR, totalTime, totalTime);
 
-                String error_xor = result_xor._1.toString();
-                String runtime_xor = result_xor._2.toString();
-                String name = names.get(i);
-
-
-                writeResults(String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %s, %s, %s, %s%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
-                        typeName, height, width, density, dim, assocThreshold, tau, name, error_or, error_xor, runtime_or, runtime_xor), FILENAME);
-            }
+            writeResults(result, FILENAME);
         }
+
+
+        // -----------------------------------------
+        //    Use XORDecompose:
+        // -----------------------------------------
+
+        XORDecomposeWithPrint xorDec = new XORDecomposeWithPrint(matrixA);
+
+
+        String currentAlgorithm = String.format("%n%s, Algorithm used: %s%n", java.time.LocalTime.now(), "XORDecompose");
+//                writeResults(currentAlgorithm, FILENAME);
+        System.out.printf(currentAlgorithm);
+
+
+        // decompose
+
+        // starting time - for computing run-time
+        long startTime = System.nanoTime();
+
+        Tuple<BooleanMatrix, BooleanMatrix> output1 = xorDec.iterativeDecompose(matrixA, dim, 10);
+
+        long stopTime = System.nanoTime();
+        long totalTime = stopTime - startTime;
+
+        // notice, that the decompose() method is "the right way round",
+        // from Weka's point of view
+        BooleanMatrix basisRows = output1._2;
+        BooleanMatrix learnableRepresentation = output1._1;
+
+        double reconErrorXOR = xorDec.relativeRecError;
+
+        // write results into file, one case per row.
+        String result = String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+                typeName, height, width, density, dim, assocThreshold, tau, "XorDecomposeIter10", reconErrorXOR, reconErrorXOR, totalTime,
+                totalTime);
+
+        writeResults(result, FILENAME);
+    }
+
+
+
+
+            // -----------------------------------------
+            // Use LocalSearch - For each iteration, also run all versions of LocalSearch decompositions and write for comparison:
+            // -----------------------------------------
+//
+//            // Using nextDescent, with OR, then with XOR
+
+//            ArrayList<Tuple> output = new ArrayList<Tuple>();
+//            ArrayList<String> names = new ArrayList<String>();
+//
+//            output.add(localSearch.decomposeWithRuntime(1, false));
+//            names.add("nextDescent");
+//            output.add(localSearch.decomposeWithRuntime(1, true));
+//            names.add("nextDescent");
+//
+////            output.add(localSearch.decomposeWithRuntime(2, false));
+////            names.add("steepDescent");
+////            output.add(localSearch.decomposeWithRuntime(2, true));
+////            names.add("steepDescent");
+//
+//            output.add(localSearch.decomposeWithRuntime(3, numRestarts, true, false));
+//            names.add(String.format("randRestart_%d_ND", numRestarts));
+//            output.add(localSearch.decomposeWithRuntime(3, numRestarts, true, true));
+//            names.add(String.format("randRestart_%d_ND", numRestarts));
+//
+////            output.add(localSearch.decomposeWithRuntime(3, numRestarts, false, false));
+////            names.add(String.format("randRestart_%d_SD", numRestarts));
+////            output.add(localSearch.decomposeWithRuntime(3, numRestarts, false, true));
+////            names.add(String.format("randRestart_%d_SD", numRestarts));
+//
+//
+//
+//            for(int i = 0; i < output.size(); i = i + 2){
+//                Tuple result_or = output.get(i);
+//                Tuple result_xor = output.get(i + 1);
+//
+//                String error_or = result_or._1.toString();
+//                String runtime_or = result_or._2.toString();
+//
+//                String error_xor = result_xor._1.toString();
+//                String runtime_xor = result_xor._2.toString();
+//                String name = names.get(i);
+//
+//
+//                writeResults(String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %s, %s, %s, %s%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+//                        typeName, height, width, density, dim, assocThreshold, tau, name, error_or, error_xor, runtime_or, runtime_xor), FILENAME);
+//            }
+//        }
+
+
+
 //    }
 
 

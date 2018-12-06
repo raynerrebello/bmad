@@ -205,6 +205,21 @@ public class BooleanMatrix {
 		return new BooleanMatrix(new byte[][]{rows[r]});
 	}
 
+
+	/**
+	 * Extract single column as a separate matrix. no values copied.
+	 * @param c: index of column to extract, starting from 0.
+	 * @return: a new BooleanMatrix object representing the target column.
+	 */
+	public BooleanMatrix getCol(int c){
+		byte[][] output = new byte[height][1];
+		for(int row = 0; row < height; row++){
+			output[row][0] = rows[row][c];
+		}
+		return new BooleanMatrix(output);
+	}
+
+
 	/**
 	 * Analogous to get row: no values are copied
 	 *
