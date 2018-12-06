@@ -1,9 +1,7 @@
 package org.kramerlab.bmad.scripts;
 
-<<<<<<< HEAD
 import org.kramerlab.bmad.scripts.MatrixFromFile;
-=======
->>>>>>> 4b64e1b1599f59f8ecc199a4e52b76050d03c170
+
 import org.kramerlab.bmad.algorithms.*;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;

@@ -7,6 +7,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.kramerlab.bmad.general.*;
 import weka.core.Attribute;
 import weka.core.Instances;
@@ -512,5 +513,35 @@ public class BooleanMatrix {
 			System.out.print("\n");
 
 		}
+	}
+
+	// Returns how close R is to C by interpreting every bitsPerPixel elements within a row as a base-10 number.
+	public static double averageEuclideanReconstructionError(BooleanMatrix C, BooleanMatrix R, int bitsPerPixel){
+
+		assert(C.getWidth()%bitsPerPixel == 0);
+		assert(C.getHeight() == R.getHeight());
+		assert(C.getWidth() == R.getWidth());
+		double error = 0d;
+
+		int nPixels = C.getWidth()/bitsPerPixel;
+		for (int i = 0; i < C.getHeight(); i++) {
+			for (int p = 0; p < nPixels  ; p++) {
+				String s1 = "";
+				String s2 = "";
+
+				for (int j = bitsPerPixel*p; j < bitsPerPixel*(p+1) ; j++) {
+					s1 += (C.apply(i,j) == TRUE) ? "1" : "0";
+					s2 += (R.apply(i,j) == TRUE) ? "1" : "0";
+				}
+
+				double v1 = (double) Integer.parseInt(s1,2);
+				double v2 = (double) Integer.parseInt(s2,2);
+
+				error += Math.sqrt(Math.pow(v1 -v2,2));
+			}
+		}
+
+		return error/(C.size()._1 * C.size()._2 / (double) bitsPerPixel);
+
 	}
 }

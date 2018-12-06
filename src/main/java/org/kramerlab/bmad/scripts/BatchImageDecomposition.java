@@ -1,4 +1,5 @@
 package org.kramerlab.bmad.scripts;
+import org.kramerlab.bmad.algorithms.EuclideanLocalSearch;
 import org.kramerlab.bmad.algorithms.LocalSearchReturnMatrix;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
@@ -31,8 +32,8 @@ public class BatchImageDecomposition {
                     System.out.println(matrix.getWidth());
                     System.out.println(matrix.getHeight());
 
-                    LocalSearchReturnMatrix localSearch = new LocalSearchReturnMatrix(matrix,(int) Math.sqrt(Math.min(matrix.getHeight(),matrix.getWidth())));
-                    Tuple<BooleanMatrix,BooleanMatrix> decomp = localSearch.randomRestarts(100,true,false);
+                    EuclideanLocalSearch localSearch = new EuclideanLocalSearch(matrix,(int) Math.sqrt(Math.min(matrix.getHeight(),matrix.getWidth())));
+                    Tuple<BooleanMatrix,BooleanMatrix> decomp = localSearch.randomRestarts(10,8,false);
                     BooleanMatrix recon = decomp._1.booleanProduct(decomp._2,false);
 
                     BinaryParser.booleanMatrixToBinary(recon,"\\src\\main\\java\\org\\kramerlab\\bmad\\scripts\\out\\" + listOfFiles[i].getName() );

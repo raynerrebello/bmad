@@ -31,6 +31,8 @@ hs_err_pid*
 **/*.txt
 **/*.xlsx
 **/*.csv
+*.iml
+**/__pycache__/
 
 /target
 
