@@ -155,7 +155,7 @@ public class RunExperiment {
 
 
         // Create new CSV file with unique file name, crate header row.
-        String header = String.format("Date/Time, MatrixTypeName, Height, Width, Density, Dimension, AssocThreshold, Tau, Algorithm, ReconError_OR, ReconError_XOR, Runtime_OR(nanoSec), Runtime_XOR(nanoSec)%n");
+        String header = String.format("Date/Time, MatrixTypeName, Height, Width, Density, Dimension, AssocThreshold, Tau, Algorithm, ReconError_OR, ReconError_XOR, Runtime_OR(nanoSec), Runtime_XOR(nanoSec), colMatrix_size, rowMatrix_size%n");
         writeResults(header, FILENAME);
 
 
@@ -217,7 +217,7 @@ public class RunExperiment {
         //    Use XORDecompose:
         // -----------------------------------------
 
-        XORDecomposeWithPrint xorDec = new XORDecomposeWithPrint(matrixA);
+        XORDecompose xorDec = new XORDecompose(matrixA);
 
 
         String currentAlgorithm = String.format("%n%s, Algorithm used: %s%n", java.time.LocalTime.now(), "XORDecompose");
@@ -237,15 +237,15 @@ public class RunExperiment {
 
         // notice, that the decompose() method is "the right way round",
         // from Weka's point of view
-        BooleanMatrix basisRows = output1._2;
-        BooleanMatrix learnableRepresentation = output1._1;
+        BooleanMatrix rowMatrix = output1._2;
+        BooleanMatrix colMatrix = output1._1;
 
         double reconErrorXOR = xorDec.relativeRecError;
 
         // write results into file, one case per row.
-        String result = String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
-                typeName, height, width, density, dim, assocThreshold, tau, "XorDecomposeIter10", reconErrorXOR, reconErrorXOR, totalTime,
-                totalTime);
+        String result = String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d, %d, %s, %s%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+                typeName, height, width, density, dim, assocThreshold, tau, "XorDecomposeIter10", reconErrorXOR, reconErrorXOR, totalTime, totalTime,
+                colMatrix.size(), colMatrix.size());
 
         writeResults(result, FILENAME);
     }
