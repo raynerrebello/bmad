@@ -16,10 +16,212 @@ public class SimulatedAnnealing {
     }
 
     public Tuple<BooleanMatrix,BooleanMatrix> anneal(double t0, double tmin,double alpha,boolean xor){
+        double density = this.C.getDensity()/2;
+        int n = this.C.getHeight();
+        int m = this.C.getWidth();
+
+        double t = t0;
+        double delta;
+
+        BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);
+        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,this.k,density,0d);
+        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(this.k,m,density,0d);
+
+        BooleanMatrix bestS = S;
+        BooleanMatrix bestB = B;
+        double bestError = 1;
+        double error;
+        boolean changed = false;
+
+        while(t>=tmin){
+
+            for (int i = 0; i < n; i++){
+                BooleanMatrix S_i = S.getRow(i);// still points to the same row
+                BooleanMatrix incumbentRow = S_i.booleanProduct(B, xor);
+                double incumbentRowError = this.C.getRow(i).relativeReconstructionError(incumbentRow,1);
+
+                for (int j = 0; j < this.k; j++){
+                    S_i.update(j, BooleanMatrix.not(S_i.apply(j))); // flip bit.
+                    BooleanMatrix rowResult = S_i.booleanProduct(B, xor);
+                    double rowError = this.C.getRow(i).relativeReconstructionError(rowResult,1);
+                    delta =  rowError-incumbentRowError;
+                    if (delta < 0){
+                        incumbentRowError = rowError;
+                        error = this.C.relativeReconstructionError(S.booleanProduct(B),1);
+                        changed = true;
+                        if ( error < bestError) {
+                            bestB = B;
+                            bestS = S;
+                            bestError = error;
+                        }
+                    }else if(Math.exp(-delta/t) > Math.random()){
+                        incumbentRowError = rowError;
+                        changed = true;
+                    }else{
+                        S_i.update(j, BooleanMatrix.not(S_i.apply(j)));
+                    }
+
+                    if(changed){
+                        t = alpha * t;
+                        changed = false;
+                    }
+                }
+
+            }
 
 
+            BooleanMatrix S_T = BooleanMatrix.deepTranspose(S);
+            BooleanMatrix B_T = BooleanMatrix.deepTranspose(B);
+
+            for (int i = 0; i < m; i++){
+
+                BooleanMatrix B_Ti = B_T.getRow(i);// still points to the same row
+                BooleanMatrix incumbentRow = B_Ti.booleanProduct(S_T, xor);
+                double incumbentRowError = C_T.getRow(i).relativeReconstructionError(incumbentRow,1);
+
+                for (int j = 0; j < this.k; j++){
+
+                    B_Ti.update(j,BooleanMatrix.not(B_Ti.apply(j))); // flip bit.
+                    BooleanMatrix rowResult = B_Ti.booleanProduct(S_T, xor);
+                    double rowError = C_T.getRow(i).relativeReconstructionError(rowResult,1);
+                    delta =  rowError-incumbentRowError;
+                    if (delta < 0){
+                        incumbentRowError = rowError;
+                        S = BooleanMatrix.deepTranspose(S_T);
+                        B = BooleanMatrix.deepTranspose(B_T);
+                        error = this.C.relativeReconstructionError(S.booleanProduct(B),1);
+                        changed = true;
+                        if ( error < bestError) {
+                            bestB = B;
+                            bestS = S;
+                            bestError = error;
+                        }
+                    }else if(Math.exp(-delta/t) > Math.random()){
+                        incumbentRowError = rowError;
+                        changed = true;
+                    }else{
+                        B_Ti.update(j, BooleanMatrix.not(B_Ti.apply(j)));
+                    }
+
+                    if(changed){
+                        t = alpha * t;
+                        changed = false;
+                    }
+                }
+            }
+
+            S = BooleanMatrix.deepTranspose(S_T);
+            B = BooleanMatrix.deepTranspose(B_T);
+
+        }
+
+        System.out.println(bestError);
+        return new Tuple<>(bestS, bestB);
+    }
+
+    public Tuple<BooleanMatrix,BooleanMatrix> anneal(double t0, double tmin,double alpha,boolean xor,int bpp){
+
+        double density = this.C.getDensity()/2;
+        int n = this.C.getHeight();
+        int m = this.C.getWidth();
+
+        double t = t0;
+        double delta;
+
+        BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);
+        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,this.k,density,0d);
+        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(this.k,m,density,0d);
+
+        BooleanMatrix bestS = S;
+        BooleanMatrix bestB = B;
+        double bestError = 255;
+        double error;
+        boolean changed = false;
+
+        while(t>=tmin){
+
+            for (int i = 0; i < n; i++){
+                BooleanMatrix S_i = S.getRow(i);// still points to the same row
+                BooleanMatrix incumbentRow = S_i.booleanProduct(B, xor);
+                double incumbentRowError = this.C.getRow(i).averageEuclideanReconstructionError(incumbentRow,bpp);
+
+                for (int j = 0; j < this.k; j++){
+                    S_i.update(j, BooleanMatrix.not(S_i.apply(j))); // flip bit.
+                    BooleanMatrix rowResult = S_i.booleanProduct(B, xor);
+                    double rowError = this.C.getRow(i).averageEuclideanReconstructionError(rowResult,bpp);
+                    delta =  rowError-incumbentRowError;
+                    if (delta < 0){
+                        incumbentRowError = rowError;
+                        error = this.C.averageEuclideanReconstructionError(S.booleanProduct(B),bpp);
+                        changed = true;
+                        if ( error < bestError) {
+                            bestB = B;
+                            bestS = S;
+                            bestError = error;
+                        }
+                    }else if(Math.exp(-delta/t) > Math.random()){
+                        incumbentRowError = rowError;
+                        changed = true;
+                    }else{
+                        S_i.update(j, BooleanMatrix.not(S_i.apply(j)));
+                    }
+
+                    if(changed){
+                        t = alpha * t;
+                        changed = false;
+                    }
+                }
+
+            }
 
 
+            BooleanMatrix S_T = BooleanMatrix.deepTranspose(S);
+            BooleanMatrix B_T = BooleanMatrix.deepTranspose(B);
+
+            for (int i = 0; i < m; i++){
+
+                BooleanMatrix B_Ti = B_T.getRow(i);// still points to the same row
+                BooleanMatrix incumbentRow = B_Ti.booleanProduct(S_T, xor);
+                double incumbentRowError = C_T.getRow(i).averageEuclideanReconstructionError(incumbentRow,bpp);
+
+                for (int j = 0; j < this.k; j++){
+
+                    B_Ti.update(j,BooleanMatrix.not(B_Ti.apply(j))); // flip bit.
+                    BooleanMatrix rowResult = B_Ti.booleanProduct(S_T, xor);
+                    double rowError = C_T.getRow(i).averageEuclideanReconstructionError(rowResult,bpp);
+                    delta =  rowError-incumbentRowError;
+                    if (delta < 0){
+                        incumbentRowError = rowError;
+                        S = BooleanMatrix.deepTranspose(S_T);
+                        B = BooleanMatrix.deepTranspose(B_T);
+                        error = this.C.averageEuclideanReconstructionError(S.booleanProduct(B),bpp);
+                        changed = true;
+                        if ( error < bestError) {
+                            bestB = B;
+                            bestS = S;
+                            bestError = error;
+                        }
+                    }else if(Math.exp(-delta/t) > Math.random()){
+                        incumbentRowError = rowError;
+                        changed = true;
+                    }else{
+                        B_Ti.update(j, BooleanMatrix.not(B_Ti.apply(j)));
+                    }
+
+                    if(changed){
+                        t = alpha * t;
+                        changed = false;
+                    }
+                }
+            }
+
+            S = BooleanMatrix.deepTranspose(S_T);
+            B = BooleanMatrix.deepTranspose(B_T);
+
+        }
+
+        System.out.println(bestError);
+        return new Tuple<>(bestS, bestB);
 
     }
 }

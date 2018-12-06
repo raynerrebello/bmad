@@ -516,32 +516,43 @@ public class BooleanMatrix {
 	}
 
 	// Returns how close R is to C by interpreting every bitsPerPixel elements within a row as a base-10 number.
-	public static double averageEuclideanReconstructionError(BooleanMatrix C, BooleanMatrix R, int bitsPerPixel){
+	public double averageEuclideanReconstructionError(BooleanMatrix R, int bitsPerPixel){
 
-		assert(C.getWidth()%bitsPerPixel == 0);
-		assert(C.getHeight() == R.getHeight());
-		assert(C.getWidth() == R.getWidth());
+		assert(this.getWidth()%bitsPerPixel == 0);
+		assert(this.getHeight() == R.getHeight());
+		assert(this.getWidth() == R.getWidth());
 		double error = 0d;
-
-		int nPixels = C.getWidth()/bitsPerPixel;
-		for (int i = 0; i < C.getHeight(); i++) {
+		StringBuilder s1 = new StringBuilder("12345678");
+		StringBuilder s2 = new StringBuilder("12345678");
+		int nPixels = this.getWidth()/bitsPerPixel;
+		for (int i = 0; i < this.getHeight(); i++) {
 			for (int p = 0; p < nPixels  ; p++) {
-				String s1 = "";
-				String s2 = "";
 
 				for (int j = bitsPerPixel*p; j < bitsPerPixel*(p+1) ; j++) {
-					s1 += (C.apply(i,j) == TRUE) ? "1" : "0";
-					s2 += (R.apply(i,j) == TRUE) ? "1" : "0";
+					s1.setCharAt(j-bitsPerPixel*p, this.apply(i,j) == TRUE ? '1' : '0' );
+					s2.setCharAt(j-bitsPerPixel*p, (R.apply(i,j) == TRUE) ? '1' : '0' );
 				}
 
-				double v1 = (double) Integer.parseInt(s1,2);
-				double v2 = (double) Integer.parseInt(s2,2);
+				double v1 = (double) Integer.parseInt(s1.toString(),2);
+				double v2 = (double) Integer.parseInt(s2.toString(),2);
 
 				error += Math.sqrt(Math.pow(v1 -v2,2));
 			}
 		}
 
-		return error/(C.size()._1 * C.size()._2 / (double) bitsPerPixel);
+		return error/(this.size()._1 * this.size()._2 / (double) bitsPerPixel);
 
+	}
+
+	public BooleanMatrix xorAdd(BooleanMatrix R){
+		assert(this.getHeight() == R.getHeight());
+		assert(this.getWidth() == R.getWidth());
+		byte[][] result = new byte[this.getHeight()][this.getWidth()];
+		for (int i = 0; i <this.getHeight() ; i++) {
+			for (int j = 0; j < this.getWidth(); j++) {
+				result[i][j] =  (this.apply(i,j)==R.apply(i,j)) ? FALSE : TRUE;
+			}
+		}
+		return new BooleanMatrix(result);
 	}
 }
