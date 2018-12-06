@@ -26,7 +26,7 @@ def bin_repr2img(bin_repr,palette = web_palette):
 def img2mat(fn):
         x = img2bin_repr(fn)
         print(x[0,0])
-        r = np.zeros((*x.shape,8),dtype = 'uint8')
+        r = np.zeros((x.shape[0],x.shape[1],8),dtype = 'uint8')
         for i,row in enumerate(x):
                 for j,val in enumerate(row):
                         r[i,j,:] = np.array([int(d) for d in list(val)])
@@ -35,7 +35,7 @@ def img2mat(fn):
         r = r.reshape(r.shape[0]*r.shape[1])
         r = list(r)
         assert(len(r)==(x.shape[0]*x.shape[1]*8))
-        with open(f"./bin_out/{fn.split('.')[1].split('/')[-1]}_{n}_{m}.bin",'wb') as f:
+        with open("./bin_out/%s_%d_%d.bin"%(fn.split('.')[1].split('/')[-1],n,m),'wb') as f:
                 bt.bitarray(r).tofile(f)
                 
 # Read in a binary file and interpret it as an image.

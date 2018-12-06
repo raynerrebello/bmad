@@ -7,6 +7,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.kramerlab.bmad.general.*;
 import weka.core.Attribute;
 import weka.core.Instances;
@@ -527,5 +528,46 @@ public class BooleanMatrix {
 			System.out.print("\n");
 
 		}
+	}
+
+	// Returns how close R is to C by interpreting every bitsPerPixel elements within a row as a base-10 number.
+	public double averageEuclideanReconstructionError(BooleanMatrix R, int bitsPerPixel){
+
+		assert(this.getWidth()%bitsPerPixel == 0);
+		assert(this.getHeight() == R.getHeight());
+		assert(this.getWidth() == R.getWidth());
+		double error = 0d;
+		StringBuilder s1 = new StringBuilder("12345678");
+		StringBuilder s2 = new StringBuilder("12345678");
+		int nPixels = this.getWidth()/bitsPerPixel;
+		for (int i = 0; i < this.getHeight(); i++) {
+			for (int p = 0; p < nPixels  ; p++) {
+
+				for (int j = bitsPerPixel*p; j < bitsPerPixel*(p+1) ; j++) {
+					s1.setCharAt(j-bitsPerPixel*p, this.apply(i,j) == TRUE ? '1' : '0' );
+					s2.setCharAt(j-bitsPerPixel*p, (R.apply(i,j) == TRUE) ? '1' : '0' );
+				}
+
+				double v1 = (double) Integer.parseInt(s1.toString(),2);
+				double v2 = (double) Integer.parseInt(s2.toString(),2);
+
+				error += Math.sqrt(Math.pow(v1 -v2,2));
+			}
+		}
+
+		return error/(this.size()._1 * this.size()._2 / (double) bitsPerPixel);
+
+	}
+
+	public BooleanMatrix xorAdd(BooleanMatrix R){
+		assert(this.getHeight() == R.getHeight());
+		assert(this.getWidth() == R.getWidth());
+		byte[][] result = new byte[this.getHeight()][this.getWidth()];
+		for (int i = 0; i <this.getHeight() ; i++) {
+			for (int j = 0; j < this.getWidth(); j++) {
+				result[i][j] =  (this.apply(i,j)==R.apply(i,j)) ? FALSE : TRUE;
+			}
+		}
+		return new BooleanMatrix(result);
 	}
 }

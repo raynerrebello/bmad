@@ -60,7 +60,6 @@ public class BinaryParser {
         long bitsToGo = (long) C.getHeight()*C.getWidth();// Keeps track of the bits left.
         long totalBits = (long) C.getHeight()*C.getWidth();//
         int i =0;int j=0;
-        long counter = 0;
         boolean done = false;
 
         // Number of bytes to write at a time (set to the closet whole number of bytes)
