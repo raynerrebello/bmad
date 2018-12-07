@@ -1,6 +1,5 @@
 package org.kramerlab.bmad.algorithms;
 
-import org.kramerlab.bmad.CathyLocal.XORDecomposeWithPrint;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 import org.kramerlab.bmad.scripts.MatrixFromFile;
@@ -15,6 +14,7 @@ public class XORDecompose {
     private int resError;
     public int totalSize = 0, height = 0, width = 0;
     public double relativeRecError;
+    public double calculatdRecError;
 
 
     public XORDecompose(BooleanMatrix a){
@@ -50,8 +50,12 @@ public class XORDecompose {
                 pos = i;
             }
         }
+
         relativeRecError = min;
         output = tupleList.get(pos);
+        Tuple<BooleanMatrix, BooleanMatrix> approximation = xorDec.getProductAndErrorMatrices(input, output._1, output._2);
+
+        calculatdRecError = input.relativeReconstructionError(approximation._1, 1d);
         return output;
     }
 
@@ -253,6 +257,25 @@ public class XORDecompose {
         }
         return partner;
     }
+
+
+
+    /**
+     * Takes three BooleanMatrix objects  (the original matrix a (m by n), a column matrix (m by k) and row matrices (k by n)).
+     * Returns their product matrix.
+     *         Total number of mismatch (cardinality of the residual matrix) can be checked via totalError, which is used for computing the relative reconstruction error.
+     * @param a: the original m by n BooleanMatrix object to be decomposed/ approximated.
+     * @param colMatrix: a m by k BooleanMatrix object as one of the decomposition output pair.
+     * @param rowMatrix: a k by n BooleanMatrix object as the other decomposition output pair.
+     * @return: A BooleanMatrix.
+     */
+    public BooleanMatrix getProductMatrices(BooleanMatrix a, BooleanMatrix colMatrix, BooleanMatrix rowMatrix) {
+
+        // Compute product matrix of rowMatrix and colMatrix.  The addition in dot-product uses XOR. !!!
+        BooleanMatrix productMatrix = colMatrix.booleanProduct(rowMatrix, true);
+        return productMatrix;
+    }
+
 
 
     /**
