@@ -8,19 +8,24 @@ public class SimulatedAnnealing {
 
     private final BooleanMatrix C;
     private final int k;
-    private double relativeRecError;
+    private final double t0;
+    private final double tmin;
+    private final double alpha;
 
-    public SimulatedAnnealing(BooleanMatrix C, int dimension){
+    public SimulatedAnnealing(BooleanMatrix C, int dimension,double t0, double tmin,double alpha){
         this.C = C;
         this.k = dimension;
+        this.t0 = t0;
+        this.tmin =tmin;
+        this.alpha = alpha;
     }
 
-    public Tuple<BooleanMatrix,BooleanMatrix> anneal(double t0, double tmin,double alpha,boolean xor){
+    public Tuple<BooleanMatrix,BooleanMatrix> anneal(boolean xor){
         double density = this.C.getDensity()/2;
         int n = this.C.getHeight();
         int m = this.C.getWidth();
 
-        double t = t0;
+        double t = this.t0;
         double delta;
 
         BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);
@@ -119,13 +124,13 @@ public class SimulatedAnnealing {
         return new Tuple<>(bestS, bestB);
     }
 
-    public Tuple<BooleanMatrix,BooleanMatrix> anneal(double t0, double tmin,double alpha,boolean xor,int bpp){
+    public Tuple<BooleanMatrix,BooleanMatrix> anneal(boolean xor,int bpp){
 
         double density = this.C.getDensity()/2;
         int n = this.C.getHeight();
         int m = this.C.getWidth();
 
-        double t = t0;
+        double t = this.t0;
         double delta;
 
         BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);

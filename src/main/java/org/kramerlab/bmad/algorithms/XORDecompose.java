@@ -1,6 +1,6 @@
 package org.kramerlab.bmad.algorithms;
 
-import org.kramerlab.bmad.CathyLocal.XORDecomposeWithPrint;
+
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 import org.kramerlab.bmad.scripts.MatrixFromFile;

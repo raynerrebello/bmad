@@ -3,7 +3,6 @@ package org.kramerlab.bmad.algorithms;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 import org.kramerlab.bmad.matrix.RandomMatrixGeneration;
-import weka.core.Instances;
 
 public class EuclideanLocalSearch {
     private BooleanMatrix C;
@@ -19,7 +18,7 @@ public class EuclideanLocalSearch {
 
         int MAX_ITERATIONS = 10000000;
         double minDifference = 1e-3;
-        double density = this.C.getDensity()/2;
+        double density = Math.sqrt(1 - Math.pow(1 - this.C.getDensity(),1./this.k));
 
         boolean improved;
         int iter = 0;
