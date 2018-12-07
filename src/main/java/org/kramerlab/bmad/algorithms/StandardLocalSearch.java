@@ -6,39 +6,30 @@ import org.kramerlab.bmad.matrix.RandomMatrixGeneration;
 
 public class StandardLocalSearch implements Heuristic{
 
-    private BooleanMatrix C;
-    private int k;
 
-    // Constructor - takes a BooleanMatrix object
-    public StandardLocalSearch(BooleanMatrix a, int dimension) {
-        this.C = a;
-        this.k = dimension;
-    }
-
-
-    Tuple<BooleanMatrix,BooleanMatrix> decomposition(boolean xor,int numberRestarts,int bpp){
-        if(numberRestarts>0){
-            return nextDescent(xor);
+    public Tuple<BooleanMatrix,BooleanMatrix> decomposition(BooleanMatrix C,int k,boolean xor,int numberRestarts,int bpp){
+        if(numberRestarts<=1){
+            return nextDescent(C,k,xor);
         }else{
-            return randomRestarts(numberRestarts,xor);
+            return randomRestarts(C,k,numberRestarts,xor);
         }
     }
 
-    public Tuple<BooleanMatrix, BooleanMatrix> nextDescent(boolean xor) {
+    public Tuple<BooleanMatrix, BooleanMatrix> nextDescent(BooleanMatrix C,int k,boolean xor) {
 
         int MAX_ITERATIONS = 10000000;
-        double minDifference = 0;
-        double density = Math.sqrt(1 - Math.pow(1 - this.C.getDensity(),1./this.k));
+        double minDifference = 1e-3;
+        double density = Math.sqrt(1 - Math.pow(1 - C.getDensity(),1./k));
 
         boolean improved;
         int iter = 0;
-        int n = this.C.getHeight();
-        int m = this.C.getWidth();
+        int n = C.getHeight();
+        int m = C.getWidth();
 
-        BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);
+        BooleanMatrix C_T = BooleanMatrix.deepTranspose(C);
 
-        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n, this.k, density, 0d);
-        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(this.k, m, density, 0d);
+        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n, k, density, 0d);
+        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(k, m, density, 0d);
 
         while (true) {
             while (true) {
@@ -48,13 +39,13 @@ public class StandardLocalSearch implements Heuristic{
 
                     BooleanMatrix S_i = S.getRow(i);// still points to the same row
                     BooleanMatrix incumbentRow = S_i.booleanProduct(B, xor);
-                    double incumbentRowError = this.C.getRow(i).reconstructionError(incumbentRow, 1d);
+                    double incumbentRowError = C.getRow(i).reconstructionError(incumbentRow, 1d);
 
-                    for (int j = 0; j < this.k; j++) {
+                    for (int j = 0; j < k; j++) {
 
                         S_i.update(j, BooleanMatrix.not(S_i.apply(j))); // flip bit.
                         BooleanMatrix rowResult = S_i.booleanProduct(B, xor);
-                        double rowError = this.C.getRow(i).reconstructionError(rowResult, 1d);
+                        double rowError = C.getRow(i).reconstructionError(rowResult, 1d);
 
                         if (incumbentRowError - rowError > minDifference) {
                             improved = true;
@@ -74,7 +65,7 @@ public class StandardLocalSearch implements Heuristic{
                     BooleanMatrix incumbentRow = B_Ti.booleanProduct(S_T, xor);
                     double incumbentRowError = C_T.getRow(i).reconstructionError(incumbentRow, 1d);
 
-                    for (int j = 0; j < this.k; j++) {
+                    for (int j = 0; j < k; j++) {
 
                         B_Ti.update(j, BooleanMatrix.not(B_Ti.apply(j))); // flip bit.
                         BooleanMatrix rowResult = B_Ti.booleanProduct(S_T, xor);
@@ -103,7 +94,7 @@ public class StandardLocalSearch implements Heuristic{
         }
     }
 
-        public Tuple<BooleanMatrix, BooleanMatrix> randomRestarts(int numRestarts, boolean xor) {
+        public Tuple<BooleanMatrix, BooleanMatrix> randomRestarts(BooleanMatrix C,int k,int numRestarts, boolean xor) {
 
             double bestError = 255;
             double error;
@@ -113,15 +104,15 @@ public class StandardLocalSearch implements Heuristic{
 
             for (int i = 0; i < numRestarts; i++) {
 
-                output = nextDescent(xor);
-                error = this.C.relativeReconstructionError(output._1.booleanProduct(output._2),1d);
+                output = nextDescent(C, k, xor);
+                error = C.relativeReconstructionError(output._1.booleanProduct(output._2),1d);
                 if (error < bestError){
                     bestError = error;
                     S = output._1;
                     B = output._2;
                 }
 
-                System.out.printf("\r %d out of %d restarts are complete with the best average recon = %f",i+1,numRestarts,bestError);
+                //System.out.printf("\r %d out of %d restarts are complete with the best average recon = %f",i+1,numRestarts,bestError);
             }
 
             System.out.printf("\n Using %s, %s, Best_recon = %f%n",  xor? "XOR": " OR", "nextDescent", bestError);

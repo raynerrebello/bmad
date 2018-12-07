@@ -5,32 +5,32 @@ import org.kramerlab.bmad.matrix.BooleanMatrix;
 import org.kramerlab.bmad.matrix.RandomMatrixGeneration;
 
 public class EuclideanLocalSearch {
-    private BooleanMatrix C;
-    private int k;
 
-    // Constructor - takes a BooleanMatrix object
-    public EuclideanLocalSearch(BooleanMatrix a,int dimension) {
-        this.C = a;
-        this.k = dimension;
+    public Tuple<BooleanMatrix,BooleanMatrix> decomposition(BooleanMatrix C,int k,boolean xor,int numberRestarts,int bpp){
+        if(numberRestarts<=1){
+            return nextDescent(C,k,bpp,xor);
+        }else{
+            return randomRestarts(C,k,numberRestarts,bpp,xor);
+        }
     }
 
-    public Tuple<BooleanMatrix, BooleanMatrix> nextDescent(int bpp,boolean xor){
+    public Tuple<BooleanMatrix, BooleanMatrix> nextDescent(BooleanMatrix C,int k,int bpp,boolean xor){
 
         int MAX_ITERATIONS = 10000000;
         double minDifference = 1e-3;
-        double density = Math.sqrt(1 - Math.pow(1 - this.C.getDensity(),1./this.k));
+        double density = Math.sqrt(1 - Math.pow(1 - C.getDensity(),1./k));
 
         boolean improved;
         int iter = 0;
-        int n = this.C.getHeight();
-        int m = this.C.getWidth();
+        int n = C.getHeight();
+        int m = C.getWidth();
 
-        BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);
+        BooleanMatrix C_T = BooleanMatrix.deepTranspose(C);
 
         // Combination matrix
-        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,this.k,density,0d);
+        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,k,density,0d);
         // Basis matrix
-        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(this.k,m,density,0d);
+        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(k,m,density,0d);
 
         while(true){
             // Explore neighbourhood of 1 bit swaps of S
@@ -39,13 +39,13 @@ public class EuclideanLocalSearch {
 
                 BooleanMatrix S_i = S.getRow(i);// still points to the same row
                 BooleanMatrix incumbentRow = S_i.booleanProduct(B, xor);
-                double incumbentRowError = this.C.getRow(i).averageEuclideanReconstructionError(incumbentRow,bpp);
+                double incumbentRowError = C.getRow(i).averageEuclideanReconstructionError(incumbentRow,bpp);
 
-                for (int j = 0; j < this.k; j++){
+                for (int j = 0; j < k; j++){
 
                     S_i.update(j, BooleanMatrix.not(S_i.apply(j))); // flip bit.
                     BooleanMatrix rowResult = S_i.booleanProduct(B, xor);
-                    double rowError = this.C.getRow(i).averageEuclideanReconstructionError(rowResult,bpp);
+                    double rowError = C.getRow(i).averageEuclideanReconstructionError(rowResult,bpp);
 
                     if (incumbentRowError-rowError > minDifference){
                         improved = true;
@@ -65,7 +65,7 @@ public class EuclideanLocalSearch {
                 BooleanMatrix incumbentRow = B_Ti.booleanProduct(S_T, xor);
                 double incumbentRowError = C_T.getRow(i).averageEuclideanReconstructionError(incumbentRow,bpp);
 
-                for (int j = 0; j < this.k; j++){
+                for (int j = 0; j < k; j++){
 
                     B_Ti.update(j,BooleanMatrix.not(B_Ti.apply(j))); // flip bit.
                     BooleanMatrix rowResult = B_Ti.booleanProduct(S_T, xor);
@@ -93,7 +93,7 @@ public class EuclideanLocalSearch {
         return new Tuple<>(S, B);
     }
 
-    public Tuple<BooleanMatrix, BooleanMatrix> randomRestarts(int numRestarts, int bpp, boolean xor) {
+    public Tuple<BooleanMatrix, BooleanMatrix> randomRestarts(BooleanMatrix C,int k,int numRestarts, int bpp, boolean xor) {
 
         double bestAverageEuclideanError = 255;
         double averageEuclideanError;
@@ -103,8 +103,8 @@ public class EuclideanLocalSearch {
 
         for (int i = 0; i < numRestarts; i++) {
 
-            output = nextDescent(bpp,xor);
-            averageEuclideanError = this.C.averageEuclideanReconstructionError(output._1.booleanProduct(output._2),bpp);
+            output = nextDescent(C,k,bpp,xor);
+            averageEuclideanError = C.averageEuclideanReconstructionError(output._1.booleanProduct(output._2),bpp);
             if (averageEuclideanError < bestAverageEuclideanError){
                 bestAverageEuclideanError = averageEuclideanError;
                 S = output._1;

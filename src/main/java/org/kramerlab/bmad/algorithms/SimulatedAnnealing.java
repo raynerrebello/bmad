@@ -4,33 +4,38 @@ import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 import org.kramerlab.bmad.matrix.RandomMatrixGeneration;
 
-public class SimulatedAnnealing {
+public class SimulatedAnnealing implements Heuristic{
 
-    private final BooleanMatrix C;
-    private final int k;
     private final double t0;
     private final double tmin;
     private final double alpha;
 
-    public SimulatedAnnealing(BooleanMatrix C, int dimension,double t0, double tmin,double alpha){
-        this.C = C;
-        this.k = dimension;
+    public SimulatedAnnealing(double t0, double tmin,double alpha){
         this.t0 = t0;
         this.tmin =tmin;
         this.alpha = alpha;
     }
 
-    public Tuple<BooleanMatrix,BooleanMatrix> anneal(boolean xor){
-        double density = this.C.getDensity()/2;
-        int n = this.C.getHeight();
-        int m = this.C.getWidth();
+    public Tuple<BooleanMatrix,BooleanMatrix> decomposition(BooleanMatrix C,int k,boolean xor,int numberRestarts,int bpp){
+        if(bpp<=1){
+            return anneal(C,k,xor);
+        }else{
+            return anneal(C,k,xor,bpp);
+
+        }
+    }
+
+    public Tuple<BooleanMatrix,BooleanMatrix> anneal(BooleanMatrix C, int k,boolean xor){
+        double density = Math.sqrt(1 - Math.pow(1 - C.getDensity(),1./k));
+        int n = C.getHeight();
+        int m = C.getWidth();
 
         double t = this.t0;
         double delta;
 
-        BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);
-        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,this.k,density,0d);
-        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(this.k,m,density,0d);
+        BooleanMatrix C_T = BooleanMatrix.deepTranspose(C);
+        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,k,density,0d);
+        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(k,m,density,0d);
 
         BooleanMatrix bestS = S;
         BooleanMatrix bestB = B;
@@ -43,16 +48,16 @@ public class SimulatedAnnealing {
             for (int i = 0; i < n; i++){
                 BooleanMatrix S_i = S.getRow(i);// still points to the same row
                 BooleanMatrix incumbentRow = S_i.booleanProduct(B, xor);
-                double incumbentRowError = this.C.getRow(i).relativeReconstructionError(incumbentRow,1);
+                double incumbentRowError = C.getRow(i).relativeReconstructionError(incumbentRow,1);
 
-                for (int j = 0; j < this.k; j++){
+                for (int j = 0; j < k; j++){
                     S_i.update(j, BooleanMatrix.not(S_i.apply(j))); // flip bit.
                     BooleanMatrix rowResult = S_i.booleanProduct(B, xor);
-                    double rowError = this.C.getRow(i).relativeReconstructionError(rowResult,1);
+                    double rowError = C.getRow(i).relativeReconstructionError(rowResult,1);
                     delta =  rowError-incumbentRowError;
                     if (delta < 0){
                         incumbentRowError = rowError;
-                        error = this.C.relativeReconstructionError(S.booleanProduct(B),1);
+                        error = C.relativeReconstructionError(S.booleanProduct(B),1);
                         changed = true;
                         if ( error < bestError) {
                             bestB = B;
@@ -84,7 +89,7 @@ public class SimulatedAnnealing {
                 BooleanMatrix incumbentRow = B_Ti.booleanProduct(S_T, xor);
                 double incumbentRowError = C_T.getRow(i).relativeReconstructionError(incumbentRow,1);
 
-                for (int j = 0; j < this.k; j++){
+                for (int j = 0; j < k; j++){
 
                     B_Ti.update(j,BooleanMatrix.not(B_Ti.apply(j))); // flip bit.
                     BooleanMatrix rowResult = B_Ti.booleanProduct(S_T, xor);
@@ -94,7 +99,7 @@ public class SimulatedAnnealing {
                         incumbentRowError = rowError;
                         S = BooleanMatrix.deepTranspose(S_T);
                         B = BooleanMatrix.deepTranspose(B_T);
-                        error = this.C.relativeReconstructionError(S.booleanProduct(B),1);
+                        error = C.relativeReconstructionError(S.booleanProduct(B),1);
                         changed = true;
                         if ( error < bestError) {
                             bestB = B;
@@ -124,18 +129,18 @@ public class SimulatedAnnealing {
         return new Tuple<>(bestS, bestB);
     }
 
-    public Tuple<BooleanMatrix,BooleanMatrix> anneal(boolean xor,int bpp){
+    public Tuple<BooleanMatrix,BooleanMatrix> anneal(BooleanMatrix C, int k,boolean xor,int bpp){
 
-        double density = this.C.getDensity()/2;
-        int n = this.C.getHeight();
-        int m = this.C.getWidth();
+        double density = Math.sqrt(1 - Math.pow(1 - C.getDensity(),1./k));
+        int n = C.getHeight();
+        int m = C.getWidth();
 
         double t = this.t0;
         double delta;
 
-        BooleanMatrix C_T = BooleanMatrix.deepTranspose(this.C);
-        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,this.k,density,0d);
-        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(this.k,m,density,0d);
+        BooleanMatrix C_T = BooleanMatrix.deepTranspose(C);
+        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,k,density,0d);
+        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(k,m,density,0d);
 
         BooleanMatrix bestS = S;
         BooleanMatrix bestB = B;
@@ -148,16 +153,16 @@ public class SimulatedAnnealing {
             for (int i = 0; i < n; i++){
                 BooleanMatrix S_i = S.getRow(i);// still points to the same row
                 BooleanMatrix incumbentRow = S_i.booleanProduct(B, xor);
-                double incumbentRowError = this.C.getRow(i).averageEuclideanReconstructionError(incumbentRow,bpp);
+                double incumbentRowError = C.getRow(i).averageEuclideanReconstructionError(incumbentRow,bpp);
 
-                for (int j = 0; j < this.k; j++){
+                for (int j = 0; j < k; j++){
                     S_i.update(j, BooleanMatrix.not(S_i.apply(j))); // flip bit.
                     BooleanMatrix rowResult = S_i.booleanProduct(B, xor);
-                    double rowError = this.C.getRow(i).averageEuclideanReconstructionError(rowResult,bpp);
+                    double rowError = C.getRow(i).averageEuclideanReconstructionError(rowResult,bpp);
                     delta =  rowError-incumbentRowError;
                     if (delta < 0){
                         incumbentRowError = rowError;
-                        error = this.C.averageEuclideanReconstructionError(S.booleanProduct(B),bpp);
+                        error = C.averageEuclideanReconstructionError(S.booleanProduct(B),bpp);
                         changed = true;
                         if ( error < bestError) {
                             bestB = B;
@@ -189,7 +194,7 @@ public class SimulatedAnnealing {
                 BooleanMatrix incumbentRow = B_Ti.booleanProduct(S_T, xor);
                 double incumbentRowError = C_T.getRow(i).averageEuclideanReconstructionError(incumbentRow,bpp);
 
-                for (int j = 0; j < this.k; j++){
+                for (int j = 0; j < k; j++){
 
                     B_Ti.update(j,BooleanMatrix.not(B_Ti.apply(j))); // flip bit.
                     BooleanMatrix rowResult = B_Ti.booleanProduct(S_T, xor);
@@ -199,7 +204,7 @@ public class SimulatedAnnealing {
                         incumbentRowError = rowError;
                         S = BooleanMatrix.deepTranspose(S_T);
                         B = BooleanMatrix.deepTranspose(B_T);
-                        error = this.C.averageEuclideanReconstructionError(S.booleanProduct(B),bpp);
+                        error = C.averageEuclideanReconstructionError(S.booleanProduct(B),bpp);
                         changed = true;
                         if ( error < bestError) {
                             bestB = B;
@@ -227,6 +232,5 @@ public class SimulatedAnnealing {
 
         System.out.println(bestError);
         return new Tuple<>(bestS, bestB);
-
     }
 }
