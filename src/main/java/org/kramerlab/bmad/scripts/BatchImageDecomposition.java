@@ -1,5 +1,4 @@
 package org.kramerlab.bmad.scripts;
-import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
 import org.kramerlab.bmad.algorithms.*;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
