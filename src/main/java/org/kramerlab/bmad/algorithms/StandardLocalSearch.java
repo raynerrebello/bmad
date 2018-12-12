@@ -112,7 +112,7 @@ public class StandardLocalSearch implements Heuristic{
                     B = output._2;
                 }
 
-                //System.out.printf("\r %d out of %d restarts are complete with the best average recon = %f",i+1,numRestarts,bestError);
+                System.out.printf("\r %d out of %d restarts are complete with the best average recon = %f",i+1,numRestarts,bestError);
             }
 
             System.out.printf("\n Using %s, %s, Best_recon = %f%n",  xor? "XOR": " OR", "nextDescent", bestError);
