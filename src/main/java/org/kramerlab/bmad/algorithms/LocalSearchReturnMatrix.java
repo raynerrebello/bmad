@@ -72,8 +72,6 @@ public class LocalSearchReturnMatrix {
     }
 
 
-
-
     /**
      *  Hill-climbing method 1 - Take any old descent direction.
      *  Returns a (double) relativeReconstructionError.
@@ -161,15 +159,14 @@ public class LocalSearchReturnMatrix {
             }
             it = it +1;
 
-            // stop when our solution is locally optimal wrt to this neighbourhood.
             if (!improved){
                 relativeRecError = this.C.relativeReconstructionError(S.booleanProduct(B, xor),1d);
-                //System.out.println("The final-recon error is: " + relativeRecError);
+
                 break;
             }
         }
 
-        return new Tuple<BooleanMatrix, BooleanMatrix>(S, B);
+        return new Tuple<>(S, B);
     }
 
 
