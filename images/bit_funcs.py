@@ -23,14 +23,14 @@ def bin_repr2img(bin_repr,palette = web_palette):
         return im
 
 # Write image to a binary matrix for BMaD
-def img2mat(fn):
+def img2mat(fn,bpp=8):
         x = img2bin_repr(fn)
         print(x[0,0])
-        r = np.zeros((x.shape[0],x.shape[1],8),dtype = 'uint8')
+        r = np.zeros((x.shape[0],x.shape[1],bpp),dtype = 'uint8')
         for i,row in enumerate(x):
                 for j,val in enumerate(row):
                         r[i,j,:] = np.array([int(d) for d in list(val)])
-        r = r.reshape(r.shape[0], 8*r.shape[1])
+        r = r.reshape(r.shape[0], bpp*r.shape[1])
         n,m = r.shape
         r = r.reshape(r.shape[0]*r.shape[1])
         r = list(r)
