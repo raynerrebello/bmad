@@ -570,4 +570,14 @@ public class BooleanMatrix {
 		}
 		return new BooleanMatrix(result);
 	}
+
+	public static BooleanMatrix not(BooleanMatrix A){
+		byte[][] result = new byte[A.getHeight()][A.getWidth()];
+		for (int i = 0; i <A.getHeight() ; i++) {
+			for (int j = 0; j < A.getWidth(); j++) {
+				result[i][j] =  A.apply(i,j) == TRUE ? FALSE : TRUE;
+			}
+		}
+		return new BooleanMatrix(result);
+	}
 }
