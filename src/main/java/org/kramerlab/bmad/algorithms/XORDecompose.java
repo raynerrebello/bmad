@@ -58,14 +58,6 @@ public class XORDecompose {
                 pos = i;
             }
         }
-
-//        relativeRecError = min;
-//        output = tupleList.get(pos);
-//        Tuple<BooleanMatrix, BooleanMatrix> approximation = xorDec.getProductAndErrorMatrices(input, output._1, output._2);
-//
-//        calculatdRecError = input.relativeReconstructionError(approximation._1, 1d);
-//        return output;
-
         relativeRecError = min;
         output = tupleList.get(pos);
         BooleanMatrix approximation = xorDec.getProductMatrices(output._1, output._2);
@@ -73,8 +65,6 @@ public class XORDecompose {
         calculatdRecError = input.relativeReconstructionError(approximation, 1d);
         return output;
     }
-
-
 
 
     /**

@@ -800,58 +800,15 @@ public class BooleanMatrix {
 	}
 
 
-
-
-//	/**
-//	 * Returns the indices of rows/cols that are duplicates of other row/col (the original row/col is not included in the list)
-//	 * @param compareRows: A boolean flag indicating whether to compare rows (true) or columns (false)
-//	 * @return: an ArrayList<Integer> object holding indices of all duplicate row/cols (excluding those of the original row/col that has duplicates).
-//	 */
-//	public Tuple<ArrayList<Integer>, ArrayList<ArrayList<Integer>>> getDuplicatesAndOriginal(boolean compareRows) {
-//
-//		ArrayList<Integer> duplicates = new ArrayList<Integer>();
-//		ArrayList<ArrayList<Integer>> fullList = new ArrayList<ArrayList<Integer>>();
-//		Tuple<ArrayList<Integer>, ArrayList<ArrayList<Integer>>>  output = new Tuple<ArrayList<Integer>, ArrayList<ArrayList<Integer>>> (duplicates, fullList);
-//
-//		int height = getHeight();
-//		int width = getWidth();
-//
-//		if (height <= 1 || width <= 1) {
-//			System.out.println("Cannot compress further, returning original input.");
-//			return output;
-//		} else {
-//			int k = compareRows? height : width;
-//			BooleanMatrix current, other;
-//
-//			for (int r = 0; r < k - 1; r++) {
-//				current = compareRows ? getRow(r) : getCol(r);
-//				ArrayList<Integer> temp = new ArrayList<Integer>();
-//				for (int i = r + 1; i < k; i++) {
-//					other = compareRows ? getRow(i) : getCol(i);
-//					if (current.isEqual(other)) {
-//						if(!temp.contains(r)){
-//                            temp.add(r);
-//                        }
-//						duplicates.add(i);
-//						temp.add(i);
-//					}
-//				}
-//				if(!temp.isEmpty()){
-//					fullList.add(temp);
-//				}
-//
-//			}
-//			Collections.sort(duplicates);
-//			return output;
-//		}
-//	}
-
-
-
-
-
-
-
+    /**
+     * Takes in a Tuple<ArrayList<Integer>, HashMap<Integer, Set<Integer>>> which is two ways of representing the same duplication info of the same occurrence.
+     *          and a boolean flag (true = combine row, false = combine cols).
+     * @param pair: Tuple<ArrayList<Integer>, HashMap<Integer, Set<Integer>>> which is two ways of representing the same duplication info:
+     *                   Tuple._1:  the indices of all rows/cols to be removed.
+     *                   Tuple._2:  keys = first occurrence, vals = all duplications (to be removed) of the item indexed by the key.
+     * @param combineRow:  if true, remove all rows whose index is in Tuple._1, otherwise remove indexed cols.
+     * @return: A copy of the original BooleanMatrix without duplicated rows (if combineRow if true) or columns (if combineRow is false).
+     */
 	public BooleanMatrix combineVectors(Tuple<ArrayList<Integer>, HashMap<Integer, Set<Integer>>> pair, boolean combineRow) {
 
 		int height = getHeight();
@@ -868,10 +825,7 @@ public class BooleanMatrix {
 				BooleanMatrix original = output.getRow(key);
 				Set<Integer> vals = list.get(key);
 				for (int index : vals) {
-					System.out.printf("%nkey: %s val: %s%n", key, index);
-					System.out.printf("row  : %s%nother: %s%n", original, output.getRow(index));
 					original = original.xorAdd(output.getRow(index));
-					System.out.printf("row  : %s%n%n", original);
 				}
 				output.setRow(key, original);
 			}
@@ -879,48 +833,9 @@ public class BooleanMatrix {
 			if(!combineRow){
 				output = deepTranspose(output);
 			}
-			System.out.printf("FINAL output: %n%s%n%n", output);
 			return output;
 		}
 	}
-
-
-
-
-
-
-//
-//
-//	public BooleanMatrix combineRows(Tuple<ArrayList<Integer>, HashMap<Integer, Set<Integer>>> pair) {
-//
-//		int height = getHeight();
-//		int width = getWidth();
-//		BooleanMatrix output = new BooleanMatrix(this);
-//		ArrayList<Integer> indices = pair._1;
-//		HashMap<Integer, Set<Integer>> list = pair._2;
-//
-//		if (height <= 1 || width <= 1 || list.isEmpty()) {
-//			System.out.println("Cannot remove further, returning original input.");
-//			return this;
-//		} else {
-//			for (int key : list.keySet()) {
-//				BooleanMatrix original = output.getRow(key);
-//				Set<Integer> vals = list.get(key);
-//				for (int index : vals) {
-//					original = original.xorAdd(output.getRow(index));
-//				}
-//				output.setRow(key, original);
-//			}
-//			output = output.removeMultiRows(indices);
-//			System.out.printf("FINAL output: %n%s%n%n", output);
-//			return output;
-//		}
-//	}
-
-
-
-
-
 
 
 
