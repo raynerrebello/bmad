@@ -18,8 +18,8 @@ public class ErrorReconTest {
         BooleanMatrix matrix = RandomMatrixGeneration.randomMatrix(n,m,0.9,0);
 
         Heuristic ls = new StandardLocalSearch();
-        ErrorReconstruction er = new ErrorReconstruction(3,ls,false,10,0);
-        BooleanMatrix recon = er.recursiveErrorReconstruction(matrix,1,1);
+        ErrorReconstruction er = new ErrorReconstruction(3,ls,false,1000,0);
+        BooleanMatrix recon = er.recursiveErrorReconstruction(matrix,1,200);
         System.out.println(matrix.relativeReconstructionError(recon,1));
 
 //        XORDecompose xor = new XORDecompose(matrix);

@@ -4,8 +4,7 @@ import static org.kramerlab.bmad.general.Package.tuple;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.kramerlab.bmad.general.*;
@@ -580,4 +579,370 @@ public class BooleanMatrix {
 		}
 		return new BooleanMatrix(result);
 	}
+
+	/**
+	 * Extracts single row as a byte array.
+	 *  No values are copied, the row is backed by the same array.
+	 * @param r index of the row
+	 * @return row array.
+	 */
+	public byte[] getRowArray(int r) {
+		return rows[r];
+	}
+
+
+	/**
+	 * Extract single column as a byte array. no values copied.
+	 * @param c: index of column to extract, starting from 0.
+	 * @return: a new byte array representing the target column.
+	 */
+	public byte[] getColArray(int c){
+		byte[] output = new byte[height];
+		for(int row = 0; row < height; row++){
+			output[row] = rows[row][c];
+		}
+		return output;
+	}
+
+
+	public boolean isEqual(BooleanMatrix b){
+		int height = getHeight();
+		int width = getWidth();
+		double density = getDensity();
+		if(height != b.getHeight() || width != b.getWidth() || density != b.getDensity()){
+			return false;
+		}else{
+			for(int row = 0; row < height; row++){
+				for(int col = 0; col < width; col++){
+					if(apply(row, col) != b.apply(row,col)){
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+	}
+
+
+	/**
+	 * Takes the index of a row to be removed (starting from 0), returns a new BooleanMatrix object as a copy of the original matrix without this row.
+	 * @param r: an int primitive type indicating the index of the row to be removed (starting from 0).
+	 * @return: a new BooleanMatrix object as a copy of the original matrix without this row.
+	 */
+	public BooleanMatrix removeRow(int r){
+		ArrayList<byte[]> temp = new ArrayList<byte[]>();
+		for(int i = 0; i < height; i++) {
+			if (i != r) {
+				temp.add(rows[i]);
+			}
+		}
+		return new BooleanMatrix(temp.toArray(new byte[0][0]));
+	}
+
+
+	/**
+	 * Takes the index of a column to be removed (starting from 0), returns a new BooleanMatrix object as a copy of the original matrix without this column.
+	 * @param x: an int primitive type indicating the index of the column to be removed (starting from 0).
+	 * @return: a new BooleanMatrix object as a copy of the original matrix without this column.
+	 */
+	public BooleanMatrix removeCol(int x){
+		int height = this.getHeight();
+		int width = this.getWidth();
+		byte[][] temp = new byte[height][width - 1];
+		for(int r = 0; r < height; r++){
+			for(int c1 = 0; c1 < x; c1++){
+				temp[r][c1] = apply(r, c1);
+			}
+			for(int c2 = x + 1; c2 < width; c2++){
+				temp[r][c2 - 1] = apply(r, c2);
+			}
+		}
+		return new BooleanMatrix(temp);
+	}
+
+
+	/**
+	 * Takes an ArrayList<Integer> of row indices, returns a copy of the matrix without these rows.
+	 * @param rlist: an ArrayList<Integer> of row indices.
+	 * @return: a BooleanMatrix object representing the original matrix without the rows in the list.
+	 */
+	public BooleanMatrix removeMultiRows(ArrayList<Integer> rlist) {
+		Collections.sort(rlist);
+		ArrayList<byte[]> temp = new ArrayList<byte[]>();
+		for(int i = 0; i < height; i++){
+			if (!rlist.contains(i)){
+				temp.add(rows[i]);
+			}
+		}
+		return new BooleanMatrix(temp.toArray(new byte[0][0]));
+	}
+
+
+	/**
+	 * Takes an ArrayList<Integer> of column indices, returns a copy of the matrix without these columns.
+	 * @param clist: an ArrayList<Integer> of column indices.
+	 * @return: a BooleanMatrix object representing the original matrix without the columns in the list.
+	 */
+	public BooleanMatrix removeMultiCols(ArrayList<Integer> clist) {
+		Collections.sort(clist);
+		int counter, num = clist.size();
+		byte[][] temp = new byte[height][width - num];
+		for(int r = 0; r < height; r++){
+			counter = 0;
+			for(int c = 0; c < width; c++) {
+				if (clist.contains(c)) {
+					counter++;
+				}else{
+					temp[r][c - counter] = rows[r][c];
+				}
+			}
+		}
+		return new BooleanMatrix(temp);
+	}
+
+
+	/**
+	 * Takes an ArrayList<Integer> of indices, a boolean flag indicating whether to remove rows (true) or cols (false).
+	 * Return a new BooleanMatrix object without these rows/cols.
+	 * @param list: an ArrayList<Integer> containing indices of the rows/cols to be removed.
+	 * @param removeRows: a boolean flag indicating whether to remove rows (true) or columns (false).
+	 * @return: A BooleanMatrix object representing the original matrix without duplicated rows/cols (all rows/cols (depending on the boolean flag) are unique).
+	 */
+	public BooleanMatrix removeDuplicates(ArrayList<Integer> list, boolean removeRows) {
+
+		int height = getHeight();
+		int width = getWidth();
+		int counter = 0;
+		int prev = 0;
+		BooleanMatrix output = new BooleanMatrix(this);
+
+		if (height <= 1 || width <= 1 || list.isEmpty()) {
+			System.out.println("Cannot remove further, returning original input.");
+			return this;
+		} else {
+			for (int i = 0; i < list.size(); i++) {
+				int val = list.get(i);
+				int pos = (prev < val)? val - counter : val;
+				output = removeRows ? output.removeRow(pos) : output.removeCol(pos);
+				counter++;
+				prev = pos;
+			}
+			return output;
+		}
+	}
+
+
+	/**
+	 * Returns the indices of rows/cols that are duplicates of other row/col (the original row/col is not included in the list)
+	 * @param compareRows: A boolean flag indicating whether to compare rows (true) or columns (false)
+	 * @return: an ArrayList<Integer> object holding indices of all duplicate row/cols (excluding those of the original row/col that has duplicates).
+	 */
+	public ArrayList<Integer> getDuplicates(boolean compareRows) {
+
+		ArrayList<Integer> output = new ArrayList<Integer>();
+
+		int height = getHeight();
+		int width = getWidth();
+
+		if (height <= 1 || width <= 1) {
+			System.out.println("Cannot compress further, returning original input.");
+			return output;
+		} else {
+			int k = compareRows? height : width;
+			BooleanMatrix current, other;
+
+			for (int r = 0; r < k - 1; r++) {
+				current = compareRows ? getRow(r) : getCol(r);
+				for (int i = r + 1; i < k; i++) {
+					other = compareRows ? getRow(i) : getCol(i);
+					if (current.isEqual(other)) {
+						output.add(i);
+					}
+				}
+			}
+			Collections.sort(output);
+			return output;
+		}
+	}
+
+
+
+
+	/**
+	 * Returns the indices of rows/cols that are duplicates of other row/col (the original row/col is not included in the list)
+	 * @param compareRows: A boolean flag indicating whether to compare rows (true) or columns (false)
+	 * @return: an ArrayList<Integer> object holding indices of all duplicate row/cols (excluding those of the original row/col that has duplicates).
+	 */
+	public Tuple<ArrayList<Integer>, HashMap<Integer, Set<Integer>>> getDuplicatesAndOriginal(boolean compareRows) {
+
+		ArrayList<Integer> duplicates = new ArrayList<Integer>();
+		HashMap<Integer, Set<Integer>> fullList = new HashMap<Integer, Set<Integer>>();
+
+		Tuple<ArrayList<Integer>, HashMap<Integer, Set<Integer>>> output = new Tuple<ArrayList<Integer>, HashMap<Integer, Set<Integer>>> (duplicates, fullList);
+
+		int height = getHeight();
+		int width = getWidth();
+
+		if (height <= 1 || width <= 1) {
+			System.out.println("Cannot compress further, returning original input.");
+			return output;
+		} else {
+			int k = compareRows? height : width;
+			BooleanMatrix current, other;
+
+			for (int r = 0; r < k - 1; r++) {
+				current = compareRows ? getRow(r) : getCol(r);
+				Set<Integer> temp = new HashSet<Integer>();
+				for (int i = r + 1; i < k; i++) {
+					other = compareRows ? getRow(i) : getCol(i);
+					if (current.isEqual(other)) {
+						duplicates.add(i);
+						temp.add(i);
+					}
+				}
+				if(!temp.isEmpty()){
+					fullList.put(r, temp);
+				}
+			}
+			Collections.sort(duplicates);
+			return output;
+		}
+	}
+
+
+
+
+//	/**
+//	 * Returns the indices of rows/cols that are duplicates of other row/col (the original row/col is not included in the list)
+//	 * @param compareRows: A boolean flag indicating whether to compare rows (true) or columns (false)
+//	 * @return: an ArrayList<Integer> object holding indices of all duplicate row/cols (excluding those of the original row/col that has duplicates).
+//	 */
+//	public Tuple<ArrayList<Integer>, ArrayList<ArrayList<Integer>>> getDuplicatesAndOriginal(boolean compareRows) {
+//
+//		ArrayList<Integer> duplicates = new ArrayList<Integer>();
+//		ArrayList<ArrayList<Integer>> fullList = new ArrayList<ArrayList<Integer>>();
+//		Tuple<ArrayList<Integer>, ArrayList<ArrayList<Integer>>>  output = new Tuple<ArrayList<Integer>, ArrayList<ArrayList<Integer>>> (duplicates, fullList);
+//
+//		int height = getHeight();
+//		int width = getWidth();
+//
+//		if (height <= 1 || width <= 1) {
+//			System.out.println("Cannot compress further, returning original input.");
+//			return output;
+//		} else {
+//			int k = compareRows? height : width;
+//			BooleanMatrix current, other;
+//
+//			for (int r = 0; r < k - 1; r++) {
+//				current = compareRows ? getRow(r) : getCol(r);
+//				ArrayList<Integer> temp = new ArrayList<Integer>();
+//				for (int i = r + 1; i < k; i++) {
+//					other = compareRows ? getRow(i) : getCol(i);
+//					if (current.isEqual(other)) {
+//						if(!temp.contains(r)){
+//                            temp.add(r);
+//                        }
+//						duplicates.add(i);
+//						temp.add(i);
+//					}
+//				}
+//				if(!temp.isEmpty()){
+//					fullList.add(temp);
+//				}
+//
+//			}
+//			Collections.sort(duplicates);
+//			return output;
+//		}
+//	}
+
+
+
+
+
+
+
+	public BooleanMatrix combineVectors(Tuple<ArrayList<Integer>, HashMap<Integer, Set<Integer>>> pair, boolean combineRow) {
+
+		int height = getHeight();
+		int width = getWidth();
+		BooleanMatrix output = combineRow? new BooleanMatrix(this) : deepTranspose(this);
+		ArrayList<Integer> indices = pair._1;
+		HashMap<Integer, Set<Integer>> list = pair._2;
+
+		if (height <= 1 || width <= 1 || list.isEmpty()) {
+			System.out.println("Cannot remove further, returning original input.");
+			return this;
+		} else {
+			for (int key : list.keySet()) {
+				BooleanMatrix original = output.getRow(key);
+				Set<Integer> vals = list.get(key);
+				for (int index : vals) {
+					System.out.printf("%nkey: %s val: %s%n", key, index);
+					System.out.printf("row  : %s%nother: %s%n", original, output.getRow(index));
+					original = original.xorAdd(output.getRow(index));
+					System.out.printf("row  : %s%n%n", original);
+				}
+				output.setRow(key, original);
+			}
+			output = output.removeMultiRows(indices);
+			if(!combineRow){
+				output = deepTranspose(output);
+			}
+			System.out.printf("FINAL output: %n%s%n%n", output);
+			return output;
+		}
+	}
+
+
+
+
+
+
+//
+//
+//	public BooleanMatrix combineRows(Tuple<ArrayList<Integer>, HashMap<Integer, Set<Integer>>> pair) {
+//
+//		int height = getHeight();
+//		int width = getWidth();
+//		BooleanMatrix output = new BooleanMatrix(this);
+//		ArrayList<Integer> indices = pair._1;
+//		HashMap<Integer, Set<Integer>> list = pair._2;
+//
+//		if (height <= 1 || width <= 1 || list.isEmpty()) {
+//			System.out.println("Cannot remove further, returning original input.");
+//			return this;
+//		} else {
+//			for (int key : list.keySet()) {
+//				BooleanMatrix original = output.getRow(key);
+//				Set<Integer> vals = list.get(key);
+//				for (int index : vals) {
+//					original = original.xorAdd(output.getRow(index));
+//				}
+//				output.setRow(key, original);
+//			}
+//			output = output.removeMultiRows(indices);
+//			System.out.printf("FINAL output: %n%s%n%n", output);
+//			return output;
+//		}
+//	}
+
+	public static boolean allFalse(BooleanMatrix C){
+
+		for (int i = 0; i <C.getHeight() ; i++) {
+			for (int j = 0; j < C.getWidth(); j++) {
+				if (C.apply(i,j)==  TRUE){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+
+
+
+
+
+
 }

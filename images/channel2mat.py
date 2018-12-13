@@ -37,8 +37,8 @@ def mat2channel(basefn,bpp=8):
     
     
 if __name__ == "__main__":
-    # fn = "./img_in/doge.bmp"
-    # channel2mat(fn)
+    fn = "./img_in/parrots.bmp"
+    channel2mat(fn)
 
-    im = mat2channel("doge_450_800.bin")
-    im.save(open("./xordecompose_1iters_k450.bmp","wb"))
+    # im = mat2channel("doge_450_800.bin")
+    # im.save(open("./xordecompose_1iters_k450.bmp","wb"))

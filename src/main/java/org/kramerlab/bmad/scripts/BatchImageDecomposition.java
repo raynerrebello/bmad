@@ -18,7 +18,7 @@ public class BatchImageDecomposition {
         int n;
         int m;
 
-        for (int i = 8; i < 9; i++) {
+        for (int i = 2; i < 3; i++) {
             if (listOfFiles[i].isFile()) {
 
                 Matcher matcher = p.matcher(listOfFiles[i].getName());
@@ -34,8 +34,14 @@ public class BatchImageDecomposition {
 //
 //                    BooleanMatrix recon = decomp._1.booleanProduct(decomp._2,false);
                     Heuristic ls = new StandardLocalSearch();
-                    ErrorReconstruction er = new ErrorReconstruction(3,ls,false,30,0);
-                    BooleanMatrix recon = er.recursiveErrorReconstruction(matrix,2,2);
+                    DecompositionLayout.showDecomposition("target",matrix,new BooleanMatrix(n,1), new BooleanMatrix(1,m));
+
+                    XORDecompose xor = new XORDecompose(matrix);
+//                    Tuple<BooleanMatrix,BooleanMatrix> ans = xor.iterativeDecompose(matrix,00,2,1);
+                    ErrorReconstruction er = new ErrorReconstruction(3,ls,false,10,0);
+                    BooleanMatrix recon = er.recursiveErrorReconstruction(matrix,1,20);
+//                    Tuple<BooleanMatrix,BooleanMatrix> ans = ((StandardLocalSearch) ls).randomRestarts(matrix,800, 10,false);
+//                    BooleanMatrix recon = ans._1.booleanProduct(ans._2,true);
                     DecompositionLayout.showDecomposition("result",recon,new BooleanMatrix(n,1), new BooleanMatrix(1,m));
                     System.out.println(matrix.relativeReconstructionError(recon,1));
                     BinaryParser.booleanMatrixToBinary(recon,"\\src\\main\\java\\org\\kramerlab\\bmad\\scripts\\out\\" + listOfFiles[i].getName() );
