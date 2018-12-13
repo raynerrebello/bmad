@@ -1,7 +1,5 @@
 package org.kramerlab.bmad.scripts;
-import org.kramerlab.bmad.algorithms.EuclideanLocalSearch;
-import org.kramerlab.bmad.algorithms.LocalSearchReturnMatrix;
-import org.kramerlab.bmad.algorithms.SimulatedAnnealing;
+import org.kramerlab.bmad.algorithms.*;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 
@@ -29,11 +27,12 @@ public class BatchImageDecomposition {
 
                     BooleanMatrix matrix = BinaryParser.binaryToBooleanMatrix(listOfFiles[i].getPath(),n,m);
                     System.out.printf("%s, of size %d x %d, with density: %f \n","Filepath: " +listOfFiles[i].getPath(),matrix.getHeight(),matrix.getWidth(),matrix.getDensity());
-
-                    SimulatedAnnealing localSearch = new SimulatedAnnealing(matrix,(int) Math.sqrt(Math.min(matrix.getHeight(),matrix.getWidth())));
-                    Tuple<BooleanMatrix,BooleanMatrix> decomp = localSearch.anneal(2000,1,0.8,false);
-
-                    BooleanMatrix recon = decomp._1.booleanProduct(decomp._2,false);
+                    XORDecompose algo = new XORDecompose(matrix);
+                    Tuple<BooleanMatrix,BooleanMatrix> decomp = algo.iterativeDecompose(matrix,200,100);
+//                    Heuristic algo = new StandardLocalSearch();
+//                    Tuple<BooleanMatrix,BooleanMatrix> decomp = ((StandardLocalSearch) algo).randomRestarts(matrix,21,100,false);
+                    BooleanMatrix recon = decomp._1.booleanProduct(decomp._2,true);
+                    System.out.println(matrix.relativeReconstructionError(recon,1));
 
                     BinaryParser.booleanMatrixToBinary(recon,"\\src\\main\\java\\org\\kramerlab\\bmad\\scripts\\out\\" + listOfFiles[i].getName() );
 
