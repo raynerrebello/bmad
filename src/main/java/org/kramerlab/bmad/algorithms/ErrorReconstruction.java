@@ -27,7 +27,7 @@ public class ErrorReconstruction {
 
             BooleanMatrix reconstruction = decomp._1.booleanProduct(decomp._2,this.xor);
 
-            DecompositionLayout.showDecomposition(String.valueOf(r),C,decomp._1,decomp._2);
+            //DecompositionLayout.showDecomposition(String.valueOf(r),C,decomp._1,decomp._2);
 
             BooleanMatrix error = reconstruction.xorAdd(C);
 
