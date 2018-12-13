@@ -18,7 +18,7 @@ public class StandardLocalSearch implements Heuristic{
     public Tuple<BooleanMatrix, BooleanMatrix> nextDescent(BooleanMatrix C,int k,boolean xor) {
 
         int MAX_ITERATIONS = 10000000;
-        double minDifference = 1e-3;
+        double minDifference = 0;
         double density = Math.sqrt(1 - Math.pow(1 - C.getDensity(),1./k));
 
         boolean improved;

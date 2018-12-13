@@ -3,6 +3,7 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 import org.kramerlab.bmad.matrix.RandomMatrixGeneration;
+import org.kramerlab.bmad.visualization.DecompositionLayout;
 
 public class ErrorReconstruction {
 
@@ -26,9 +27,16 @@ public class ErrorReconstruction {
 
             BooleanMatrix reconstruction = decomp._1.booleanProduct(decomp._2,this.xor);
 
+            DecompositionLayout.showDecomposition(String.valueOf(r),C,decomp._1,decomp._2);
+
             BooleanMatrix error = reconstruction.xorAdd(C);
 
-            return reconstruction.xorAdd(recursiveErrorReconstruction(error,k,r-1,new SimulatedAnnealing(2000,1,0.99)));
+            if (error.getDensity() < 0.5) {
+                return reconstruction.xorAdd(BooleanMatrix.not(recursiveErrorReconstruction(BooleanMatrix.not(error),k,r-1)));
+            }else{
+                return reconstruction.xorAdd(recursiveErrorReconstruction(error,k,r-1));
+            }
+
 
         }else return RandomMatrixGeneration.randomMatrix(C.getHeight(),C.getWidth(),0,0);
     }
