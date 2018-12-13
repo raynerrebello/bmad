@@ -1,6 +1,5 @@
 package org.kramerlab.bmad.scripts;
 
-import org.kramerlab.bmad.CathyLocal.XORDecomposeWithPrint;
 import org.kramerlab.bmad.algorithms.*;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
@@ -104,8 +103,11 @@ public class RunExperiment {
      */
 
     public static Instances matrixFromRandGen(int height, int width, double density) {
-        BooleanMatrix randMatrixA = RandomMatrixGeneration.randomMatrix(height, width, density,0);
-        Instances b = randMatrixA.toInstances();
+        int x = width / 2;
+        BooleanMatrix randMatrixA = RandomMatrixGeneration.randomMatrix(height, x, density,0);
+        BooleanMatrix randMatrixB = RandomMatrixGeneration.randomMatrix(x, width, density, 0);
+        BooleanMatrix output = randMatrixA.booleanProduct(randMatrixB, true);
+        Instances b = output.toInstances();
         return b;
     }
 
@@ -155,7 +157,7 @@ public class RunExperiment {
 
 
         // Create new CSV file with unique file name, crate header row.
-        String header = String.format("Date/Time, MatrixTypeName, Height, Width, Density, Dimension, AssocThreshold, Tau, Algorithm, ReconError_OR, ReconError_XOR, Runtime_OR(nanoSec), Runtime_XOR(nanoSec), colMatrix_size, rowMatrix_size%n");
+        String header = String.format("Date/Time, MatrixTypeName, Height, Width, K, Density, AssocThreshold, Tau, Algorithm, ReconError_OR, ReconError_XOR, Runtime(nanoSec), Runtime(Sec), colMatrix_size, rowMatrix_size%n");
         writeResults(header, FILENAME);
 
 
@@ -206,8 +208,9 @@ public class RunExperiment {
             double reconErrorXOR = a.relativeReconstructionError(c.booleanProduct(b, true), 1d);
 
             // write results into file, one case per row.
-            String result = String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
-                    typeName, height, width, density, dim, assocThreshold, tau, algorithm, reconErrorOR, reconErrorXOR, totalTime, totalTime);
+            String result = String.format("%s /%s, %s, %d, %d, %d, %f, %f, %f, %s, %f, %f, %d, %f, %d, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+                    typeName, height, width, dim, density, assocThreshold, tau, algorithm, reconErrorOR, reconErrorXOR, totalTime, totalTime * Math.pow(10, -9),
+                    c.getWidth(), b.getHeight());
 
             writeResults(result, FILENAME);
         }
@@ -230,22 +233,20 @@ public class RunExperiment {
         // starting time - for computing run-time
         long startTime = System.nanoTime();
 
-        Tuple<BooleanMatrix, BooleanMatrix> output1 = xorDec.iterativeDecompose(matrixA, dim, 10);
+        Tuple<BooleanMatrix, BooleanMatrix> output1 = xorDec.iterativeDecompose(matrixA, dim, 2, 10);
 
         long stopTime = System.nanoTime();
         long totalTime = stopTime - startTime;
 
-        // notice, that the decompose() method is "the right way round",
-        // from Weka's point of view
         BooleanMatrix rowMatrix = output1._2;
         BooleanMatrix colMatrix = output1._1;
 
         double reconErrorXOR = xorDec.relativeRecError;
 
         // write results into file, one case per row.
-        String result = String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %f, %f, %d, %d, %s, %s%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
-                typeName, height, width, density, dim, assocThreshold, tau, "XorDecomposeIter10", reconErrorXOR, reconErrorXOR, totalTime, totalTime,
-                colMatrix.size(), colMatrix.size());
+        String result = String.format("%s /%s, %s, %d, %d, %d, %f, %f, %f, %s, %f, %f, %d, %f, %d, %d%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+                typeName, height, width, dim, density, assocThreshold, tau, "XorDecomposeIter10", reconErrorXOR, reconErrorXOR, totalTime, totalTime * Math.pow(10, -9),
+                colMatrix.getWidth(), rowMatrix.getHeight());
 
         writeResults(result, FILENAME);
     }
@@ -296,8 +297,8 @@ public class RunExperiment {
 //                String name = names.get(i);
 //
 //
-//                writeResults(String.format("%s /%s, %s, %d, %d, %f, %d, %f, %f, %s, %s, %s, %s, %s%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
-//                        typeName, height, width, density, dim, assocThreshold, tau, name, error_or, error_xor, runtime_or, runtime_xor), FILENAME);
+//                writeResults(String.format("%s /%s, %s, %d, %d, %d, %f, %f, %f, %s, %s, %s, %d, %f%n", java.time.LocalDate.now(), java.time.LocalTime.now(),
+//                        typeName, height, width, dim, density, assocThreshold, tau, name, error_or, error_xor, runtime_xor, runtime_xor * Math.pow(10, -9)), FILENAME);
 //            }
 //        }
 
