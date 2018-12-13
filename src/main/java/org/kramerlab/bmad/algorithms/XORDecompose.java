@@ -1,6 +1,5 @@
 package org.kramerlab.bmad.algorithms;
 
-
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 import org.kramerlab.bmad.scripts.MatrixFromFile;
@@ -15,6 +14,7 @@ public class XORDecompose {
     private int resError;
     public int totalSize = 0, height = 0, width = 0;
     public double relativeRecError;
+    public double calculatdRecError;
 
 
     public XORDecompose(BooleanMatrix a){
@@ -30,10 +30,18 @@ public class XORDecompose {
      * return the two BooleanMatrix factors with the minimum relative reconstruction error.
      * @param input: A BooleanMatrix object, the original matrix to be decomposed.
      * @param decomposeDim: the dimension of factor matrices.
+     * @param startType:
+     *                 0 = start with randomly generated non-zero vector;
+     *                 2 = start with a random copy of non-zero row/col from the original matrix.
      * @param numIteration: the number of time to iterate (repeatedly call decompose).
      * @return: A Tuple<BooleanMatrix, BooleanMatrix> with the smallest relative reconstruction error among all iterations. (._1 = column matrix, ._2 = row matrix).
      */
-    public Tuple<BooleanMatrix, BooleanMatrix> iterativeDecompose(BooleanMatrix input, int decomposeDim, int numIteration){
+    public Tuple<BooleanMatrix, BooleanMatrix> iterativeDecompose(BooleanMatrix input, int decomposeDim,  int startType, int numIteration){
+            /*
+             * startType:    0 = start with randomly generated non-zero vector;
+             *               2 = start with a random copy of non-zero row/col from the original matrix.
+             */
+
         double min = 1, error = -99;
         Tuple<BooleanMatrix, BooleanMatrix> temp, output;
         int pos = 0;
@@ -42,7 +50,7 @@ public class XORDecompose {
         XORDecompose xorDec = new XORDecompose(input);
 
         for (int i = 0; i < numIteration; i++) {
-            temp = xorDec.decompose(input, decomposeDim, 0);
+            temp = xorDec.decompose(input, decomposeDim, startType);
             error = xorDec.relativeRecError;
             tupleList.add(temp);
             if (error <= min) {
@@ -50,8 +58,19 @@ public class XORDecompose {
                 pos = i;
             }
         }
+
+//        relativeRecError = min;
+//        output = tupleList.get(pos);
+//        Tuple<BooleanMatrix, BooleanMatrix> approximation = xorDec.getProductAndErrorMatrices(input, output._1, output._2);
+//
+//        calculatdRecError = input.relativeReconstructionError(approximation._1, 1d);
+//        return output;
+
         relativeRecError = min;
         output = tupleList.get(pos);
+        BooleanMatrix approximation = xorDec.getProductMatrices(output._1, output._2);
+
+        calculatdRecError = input.relativeReconstructionError(approximation, 1d);
         return output;
     }
 
@@ -253,6 +272,24 @@ public class XORDecompose {
         }
         return partner;
     }
+
+
+
+    /**
+     * Takes three BooleanMatrix objects  (the original matrix a (m by n), a column matrix (m by k) and row matrices (k by n)).
+     * Returns their product matrix.
+     *         Total number of mismatch (cardinality of the residual matrix) can be checked via totalError, which is used for computing the relative reconstruction error.
+     * @param colMatrix: a m by k BooleanMatrix object as one of the decomposition output pair.
+     * @param rowMatrix: a k by n BooleanMatrix object as the other decomposition output pair.
+     * @return: A BooleanMatrix.
+     */
+    public BooleanMatrix getProductMatrices(BooleanMatrix colMatrix, BooleanMatrix rowMatrix) {
+
+        // Compute product matrix of rowMatrix and colMatrix.  The addition in dot-product uses XOR. !!!
+        BooleanMatrix productMatrix = colMatrix.booleanProduct(rowMatrix, true);
+        return productMatrix;
+    }
+
 
 
     /**
