@@ -1,5 +1,6 @@
 package org.kramerlab.bmad.algorithms;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.kramerlab.bmad.general.Tuple;
 import org.kramerlab.bmad.matrix.BooleanMatrix;
 import org.kramerlab.bmad.matrix.RandomMatrixGeneration;
@@ -18,8 +19,10 @@ public class StandardLocalSearch implements Heuristic{
     public Tuple<BooleanMatrix, BooleanMatrix> nextDescent(BooleanMatrix C,int k,boolean xor) {
 
         int MAX_ITERATIONS = 10000000;
-        double minDifference = 0;
-        double density = Math.sqrt(1 - Math.pow(1 - C.getDensity(),1./k));
+        double minDifference = 1e-3;
+        double rhs = 1 - Math.pow(C.getDensity(),1./k);
+        double dS = Math.random();
+        double dB = rhs/dS;
 
         boolean improved;
         int iter = 0;
@@ -28,13 +31,17 @@ public class StandardLocalSearch implements Heuristic{
 
         BooleanMatrix C_T = BooleanMatrix.deepTranspose(C);
 
-        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n, k, density, 0d);
-        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(k, m, density, 0d);
+        BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n, k, dB <1 ? dS : Math.sqrt(rhs), 0d);
+        BooleanMatrix B = RandomMatrixGeneration.randomMatrix(k, m, dB <1 ? dB : Math.sqrt(rhs), 0d);
 
         while (true) {
             while (true) {
                 // Explore neighbourhood of 1 bit swaps of S
                 improved = false; // keep track of if an improvement has been made in this neighbourhood
+                dS = Math.random();
+                dB = rhs/dS;
+                B = BooleanMatrix.allFalse(B) ? RandomMatrixGeneration.randomMatrix(k, m, dB <1 ? dB : Math.sqrt(rhs), 0d): B;
+
                 for (int i = 0; i < n; i++) {
 
                     BooleanMatrix S_i = S.getRow(i);// still points to the same row
@@ -55,6 +62,9 @@ public class StandardLocalSearch implements Heuristic{
                         }
                     }
                 }
+                dS = Math.random();
+                dB = rhs/dS;
+                S = BooleanMatrix.allFalse(S) ? RandomMatrixGeneration.randomMatrix(n, k, dB <1 ? dS : Math.sqrt(rhs), 0d): S;
 
                 BooleanMatrix S_T = BooleanMatrix.deepTranspose(S);
                 BooleanMatrix B_T = BooleanMatrix.deepTranspose(B);

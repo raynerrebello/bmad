@@ -850,6 +850,18 @@ public class BooleanMatrix {
         return new BooleanMatrix(result);
     }
 
+    public static boolean allFalse(BooleanMatrix C){
+		for (int i = 0; i <C.getHeight() ; i++) {
+			for (int j = 0; j < C.getWidth(); j++) {
+				if (C.apply(i,j)==  TRUE){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 
 
 }
+

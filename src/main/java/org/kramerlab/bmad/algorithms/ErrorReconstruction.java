@@ -31,27 +31,22 @@ public class ErrorReconstruction {
 
             BooleanMatrix error = reconstruction.xorAdd(C);
 
-            if (error.getDensity() < 0.5) {
-                return reconstruction.xorAdd(BooleanMatrix.not(recursiveErrorReconstruction(BooleanMatrix.not(error),k,r-1)));
-            }else{
-                return reconstruction.xorAdd(recursiveErrorReconstruction(error,k,r-1));
-            }
-
+            return reconstruction.xorAdd(recursiveErrorReconstruction(error,k+1,r-1));
 
         }else return RandomMatrixGeneration.randomMatrix(C.getHeight(),C.getWidth(),0,0);
     }
 
-    public BooleanMatrix recursiveErrorReconstruction(BooleanMatrix C, int k,int r,Heuristic h){
-        if (r>0) {
-            Tuple<BooleanMatrix,BooleanMatrix> decomp = h.decomposition(C,k,this.xor,this.numRestarts,this.bpp);
-
-            BooleanMatrix reconstruction = decomp._1.booleanProduct(decomp._2,this.xor);
-
-            BooleanMatrix error = reconstruction.xorAdd(C);
-
-            return reconstruction.xorAdd(recursiveErrorReconstruction(error,k,r-1));
-
-        }else return RandomMatrixGeneration.randomMatrix(C.getHeight(),C.getWidth(),0,0);
+    public BooleanMatrix iterativeErrorReconstruction(BooleanMatrix C, int k, int r){
+        BooleanMatrix residual = C;
+        BooleanMatrix S;
+        BooleanMatrix B;
+        
+        for (int i = 0; i < r; i++) {
+            Tuple<BooleanMatrix,BooleanMatrix> decomp = this.heuristic.decomposition(C,k,this.xor,this.numRestarts,this.bpp);
+        }
     }
+
+
+
 
 }
