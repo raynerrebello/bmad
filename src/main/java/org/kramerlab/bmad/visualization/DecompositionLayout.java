@@ -177,4 +177,42 @@ public class DecompositionLayout {
 		}
 		return padded;
 	}
+
+
+	public static void showMatrix(String title, BooleanMatrix a) {
+
+		int w = a.getWidth();
+		int h = a.getHeight();
+
+
+		RowMajor<BooleanMatrix> imgComponents = new RowMajor<BooleanMatrix>(1,
+				1, (BooleanMatrix) null);
+		imgComponents.update(0, 0, a);
+
+		RowMajor<Byte> img = imgComponents
+				.flatMap(new Function<BooleanMatrix, RowMajor<Byte>>() {
+					public RowMajor<Byte> apply(BooleanMatrix b) {
+						return padMatrix(b, 10).toRowMajor();
+					}
+				});
+
+		JFrame f = new JFrame(title);
+		f.getContentPane().add(
+				new SingleImageComponent(img
+						.toImage(new Function<Byte, Color>() {
+							public Color apply(Byte b) {
+								if (b == FALSE)
+									return Color.WHITE;
+								if (b == UNKNOWN)
+									return new Color(200, 240, 240);
+								if (b == TRUE)
+									return Color.BLACK;
+								return Color.RED;
+							}
+						})));
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.setVisible(true);
+		f.setExtendedState(f.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+	}
+
 }
