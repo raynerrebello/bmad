@@ -49,21 +49,25 @@ public class XORDecompose {
 
         XORDecompose xorDec = new XORDecompose(input);
 
-        for (int i = 0; i < numIteration; i++) {
-            temp = xorDec.decompose(input, decomposeDim, startType);
-            error = xorDec.relativeRecError;
-            tupleList.add(temp);
-            if (error <= min) {
-                min = error;
-                pos = i;
+        if(input.getDensity() == 0){
+            return xorDec.decompose(input, decomposeDim, startType);
+        }else{
+            for (int i = 0; i < numIteration; i++) {
+                temp = xorDec.decompose(input, decomposeDim, startType);
+                error = xorDec.relativeRecError;
+                tupleList.add(temp);
+                if (error <= min) {
+                    min = error;
+                    pos = i;
+                }
             }
-        }
-        relativeRecError = min;
-        output = tupleList.get(pos);
-        BooleanMatrix approximation = xorDec.getProductMatrices(output._1, output._2);
+            relativeRecError = min;
+            output = tupleList.get(pos);
+            BooleanMatrix approximation = xorDec.getProductMatrices(output._1, output._2);
 
-        calculatdRecError = input.relativeReconstructionError(approximation, 1d);
-        return output;
+            calculatdRecError = input.relativeReconstructionError(approximation, 1d);
+            return output;
+        }
     }
 
 
@@ -83,47 +87,56 @@ public class XORDecompose {
          *               1 = start with density-based vector (set to 1 if row/col density >= matrix density);
          *               2 = start with a random copy of non-zero row/col from the original matrix.
          */
-        canImprove = true;
-        int height = input.getHeight();
-        int width = input.getWidth();
-        int k = decomposeDim;
-        BooleanMatrix a, colMatrix, rowMatrix, resMatrix = new BooleanMatrix(height, width);
-        BitSet colVec, rowVec;
 
-        ArrayList<byte[]> rowArray = new ArrayList<byte[]>();
-        ArrayList<byte[]> colArray = new ArrayList<byte[]>(); // this one will be transposed later;
+        if (input.getDensity() == 0) {
+            relativeRecError = 0;
+            calculatdRecError = 0;
+            return new Tuple<BooleanMatrix, BooleanMatrix>(new BooleanMatrix(input.getHeight(), decomposeDim), new BooleanMatrix(decomposeDim, input.getWidth()));
+        } else {
+            canImprove = true;
+            int height = input.getHeight();
+            int width = input.getWidth();
+            int k = decomposeDim;
+            BooleanMatrix a, colMatrix, rowMatrix, resMatrix = new BooleanMatrix(height, width);
+            BitSet colVec, rowVec;
 
-        while(k > 0 && canImprove) {
-            a = (k == decomposeDim) ? input : resMatrix;
+            ArrayList<byte[]> rowArray = new ArrayList<byte[]>();
+            ArrayList<byte[]> colArray = new ArrayList<byte[]>(); // this one will be transposed later;
 
-            Tuple<BitSet, BitSet> pair = getPair(a, startType);
-            colVec = pair._1;
-            rowVec = pair._2;
+            while (k > 0 && canImprove) {
+                a = (k == decomposeDim) ? input : resMatrix;
 
-            if (colVec.cardinality() == 0 || rowVec.cardinality() == 0) {
-                canImprove = false;  // if any new pair contains a [0] vector, no improvement can be made, terminate decomposition.
-                k -= 1;
-            } else {
-                resMatrix = getResidualMatrix(a, colVec, rowVec);
-                k -= 1;
-                if(resMatrix.getDensity() == 0){
+                Tuple<BitSet, BitSet> pair = getPair(a, startType);
+                colVec = pair._1;
+                rowVec = pair._2;
+
+                if (colVec.cardinality() == 0 || rowVec.cardinality() == 0) {
                     canImprove = false;  // if any new pair contains a [0] vector, no improvement can be made, terminate decomposition.
+                    k -= 1;
+                } else {
+                    resMatrix = getResidualMatrix(a, colVec, rowVec);
+                    k -= 1;
+                    if (resMatrix.getDensity() == 0) {
+                        canImprove = false;  // if any new pair contains a [0] vector, no improvement can be made, terminate decomposition.
+                    }
+                    rowArray.add(toByteArray(rowVec, width));
+                    colArray.add(toByteArray(colVec, height));
                 }
-                rowArray.add(toByteArray(rowVec, width));
-                colArray.add(toByteArray(colVec, height));
             }
+
+            rowMatrix = new BooleanMatrix(rowArray.toArray(new byte[0][0]));
+            colMatrix = new BooleanMatrix(colArray.toArray(new byte[0][0]));
+            colMatrix = BooleanMatrix.deepTranspose(colMatrix);
+
+            resError = resMatrix.elementCount()[2];
+            relativeRecError = resMatrix.getDensity();
+            finalResMatrix = resMatrix;
+
+            return new Tuple<BooleanMatrix, BooleanMatrix>(colMatrix, rowMatrix);
         }
-
-        rowMatrix = new BooleanMatrix(rowArray.toArray(new byte[0][0]));
-        colMatrix = new BooleanMatrix(colArray.toArray(new byte[0][0]));
-        colMatrix = BooleanMatrix.deepTranspose(colMatrix);
-
-        resError = resMatrix.elementCount()[2];
-        relativeRecError = resMatrix.getDensity();
-        finalResMatrix = resMatrix;
-
-        return new Tuple<BooleanMatrix, BooleanMatrix>(colMatrix, rowMatrix);
     }
+
+
 
 
     /**
