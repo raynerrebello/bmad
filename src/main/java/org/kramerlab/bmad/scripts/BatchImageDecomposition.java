@@ -46,10 +46,10 @@ public class BatchImageDecomposition {
 //                    BooleanMatrix recon = er.recursiveErrorReconstruction(matrix,2,2);
 
                     XORDecompose xor = new XORDecompose(matrix);
-                    Tuple<BooleanMatrix,BooleanMatrix> ans = xor.iterativeDecompose(matrix,(int) (0.5 * (Math.min(n,m))),2,10);
+                    Tuple<BooleanMatrix,BooleanMatrix> ans = xor.iterativeDecompose(matrix,1,2,10);
                     BooleanMatrix recon = ans._1.booleanProduct(ans._2,true);
 
-                    //DecompositionLayout.showDecomposition("result",recon,new BooleanMatrix(n,1), new BooleanMatrix(1,m));
+                    DecompositionLayout.showMatrix("target",matrix);
                     int k = ans._1.getWidth();
                     System.out.printf("k = %d%n",ans._1.getWidth());
                     System.out.println(matrix.relativeReconstructionError(recon,1));
