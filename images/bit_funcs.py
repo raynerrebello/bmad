@@ -10,9 +10,6 @@ pad = lambda x :'0'*(8-len(x)) + x if len(x) < 8 else x
 # Returns a 2-d np-array of length 8 strings for every pixel
 def img2bin_repr(fn,bpp = 8):
         im = Image.open(fn)
-        im_pallete = im.getpalette()
-        if bpp != 8:
-                print(im_pallete)
         arr = np.array(im)
         if bpp == 8:
                 bin_repr = [[pad(bin(pixel).lstrip('0b')) for pixel in row] for row in arr]

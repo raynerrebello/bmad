@@ -37,19 +37,19 @@ def mat2channel(basefn,bpp=8):
     
     
 if __name__ == "__main__":
-    # fn_list = []
-    # for fn in os.listdir("bin_in"):
-    #     fn_list.append(fn.split("-")[-1])
-    # fn_list = list(set(fn_list))
-    # print(fn_list)
+    fn_list = []
+    for fn in os.listdir("bin_in"):
+        fn_list.append(fn.split("-")[-1])
+    fn_list = list(set(fn_list))
+    print(fn_list)
 
-    # for fn in fn_list:
-    #     im = mat2channel(fn,24)
-    #     im.save(open("./img_out/"+fn.split(".")[0] + ".bmp","wb"))
-    #     #channel2mat("./img_in/"+fn,24)
+    for fn in fn_list:
+        im = mat2channel(fn,24)
+        im.save(open("./img_out/"+fn.split(".")[0] + ".bmp","wb"))
+        #channel2mat("./img_in/"+fn,24)
 
-    for fn in os.listdir("img_in"):
-        channel2mat("./img_in/"+fn,24)
+    # for fn in os.listdir("img_in"):
+    #     channel2mat("./img_in/"+fn,24)
 
     # fn = "./img_in/doge.bmp"
     # channel2mat(fn)
