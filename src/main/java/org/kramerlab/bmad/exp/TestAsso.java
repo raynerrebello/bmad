@@ -25,37 +25,39 @@ public class TestAsso {
         BooleanMatrixDecomposition bestUnconfig = BooleanMatrixDecomposition.BEST_UNCONFIGURED;
         File folder = new File(".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\data");
         File[] listOfFiles = folder.listFiles();
-            for (int i = 0; i < listOfFiles.length; i++) {
+            for (int i =11; i < 12; i++)
                 if (listOfFiles[i].isFile()) {
-                    String name= listOfFiles[i].getName().split("\\.")[0];
+                    String name = listOfFiles[i].getName().split("\\.")[0];
                     System.out.println(name);
-                    BooleanMatrix T = MatrixFromFile.convert(listOfFiles[i].getPath(),",");
+                    BooleanMatrix T = MatrixFromFile.convert(listOfFiles[i].getPath(), ",");
                     targetDensity = T.getDensity();
                     n = T.getHeight();
                     m = T.getWidth();
 
-                        for (int k:kValues) {
-                            if (k > Math.min(n,m)) {
-                                continue;
-                            }
-                            for (int j = 0; j < numberOfRepeats; j++) {
-                            Tuple<BooleanMatrix,BooleanMatrix> ans = bestUnconfig.decompose(T,k);
+                    for (int k : kValues) {
+                        if (k > Math.min(n, m)) {
+                            continue;
+                        }
+                        for (int j = 0; j < numberOfRepeats; j++) {
+                            Tuple<BooleanMatrix, BooleanMatrix> ans = bestUnconfig.decompose(T, k);
                             BooleanMatrix R = ans._1.booleanProduct(ans._2);
-                            reconError = T.relativeReconstructionError(R,1d);
+                            reconError = T.relativeReconstructionError(R, 1d);
                             //1 - (residualMatrix.getDensity() / input.getDensity());
-                            coverage = 1 - (reconError/targetDensity);
+                            coverage = 1 - (reconError / targetDensity);
 
-                            System.out.printf(" For %s: k = %d   coverage =  %f   error = %n",name,k,coverage);
-
-                            String filename= ".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\assoout\\" + name +".txt";
-                            String outputstring = String.valueOf(k) + "," + String.valueOf(reconError) + ","  + String.valueOf(coverage) + "\n";
+                            if (j != numberOfRepeats - 1) {
+                                System.out.printf("\r %d of %d repeats for k = %d done.", j + 1, numberOfRepeats, k);
+                            } else {
+                                System.out.printf("\r %d of %d repeats for k = %d done.\n", j + 1, numberOfRepeats, k);
+                            }
+                            String filename = ".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\assoout\\" + name + ".txt";
+                            String outputstring = String.valueOf(k) + "," + String.valueOf(reconError) + "," + String.valueOf(coverage) + "\n";
                             File f = new File(filename);
 
                             PrintWriter out = null;
-                            if ( f.exists() && !f.isDirectory() ) {
+                            if (f.exists() && !f.isDirectory()) {
                                 out = new PrintWriter(new FileOutputStream(new File(filename), true));
-                            }
-                            else {
+                            } else {
                                 out = new PrintWriter(filename);
                             }
                             out.append(outputstring);
@@ -65,7 +67,6 @@ public class TestAsso {
                     }
 
                 }
-            }
 
     }
 }
