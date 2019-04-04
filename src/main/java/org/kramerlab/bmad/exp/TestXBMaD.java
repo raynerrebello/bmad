@@ -1,0 +1,74 @@
+package org.kramerlab.bmad.exp;
+
+import org.kramerlab.bmad.algorithms.BooleanMatrixDecomposition;
+import org.kramerlab.bmad.algorithms.XORDecompose;
+import org.kramerlab.bmad.general.Tuple;
+import org.kramerlab.bmad.matrix.BooleanMatrix;
+import org.kramerlab.bmad.scripts.BinaryParser;
+import org.kramerlab.bmad.scripts.MatrixFromFile;
+import org.kramerlab.bmad.visualization.DecompositionLayout;
+
+import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class TestXBMaD {
+    public static void main(String[] args) throws Exception{
+        int[] kValues = {5,10,25,50,75,100};
+        int numberOfRepeats = 100;
+        int n;
+        int m;
+        double reconError = 0;
+        double targetDensity = 0;
+        double coverage = 0;
+
+
+        File folder = new File(".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\data");
+        File[] listOfFiles = folder.listFiles();
+        for (int i =0; i < listOfFiles.length; i++)
+            if (listOfFiles[i].isFile()) {
+
+                String name = listOfFiles[i].getName().split("\\.")[0];
+                System.out.println(name);
+                BooleanMatrix T = MatrixFromFile.convert(listOfFiles[i].getPath(), ",");
+                targetDensity = T.getDensity();
+                XORDecompose bestUnconfig = new XORDecompose(T);
+                n = T.getHeight();
+                m = T.getWidth();
+
+                for (int k : kValues) {
+                    if (k > Math.min(n, m)) {
+                        continue;
+                    }
+                    for (int j = 0; j < numberOfRepeats; j++) {
+                        Tuple<BooleanMatrix, BooleanMatrix> ans = bestUnconfig.decompose(T,k,2);
+                        BooleanMatrix R = ans._1.booleanProduct(ans._2);
+                        reconError = T.relativeReconstructionError(R, 1d);
+                        //1 - (residualMatrix.getDensity() / input.getDensity());
+                        coverage = 1 - (reconError / targetDensity);
+
+                        if (j != numberOfRepeats - 1) {
+                            System.out.printf("\r %d of %d repeats for k = %d done.", j + 1, numberOfRepeats, k);
+                        } else {
+                            System.out.printf("\r %d of %d repeats for k = %d done.\n", j + 1, numberOfRepeats, k);
+                        }
+                        String filename = ".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\xorout\\" + name + ".txt";
+                        String outputstring = String.valueOf(k) + "," + String.valueOf(reconError) + "," + String.valueOf(coverage) + "\n";
+                        File f = new File(filename);
+
+                        PrintWriter out = null;
+                        if (f.exists() && !f.isDirectory()) {
+                            out = new PrintWriter(new FileOutputStream(new File(filename), true));
+                        } else {
+                            out = new PrintWriter(filename);
+                        }
+                        out.append(outputstring);
+                        out.close();
+
+                    }
+                }
+
+            }
+
+    }
+}
