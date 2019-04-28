@@ -861,6 +861,33 @@ public class BooleanMatrix {
 		return true;
 	}
 
+	public static int[] getStats(BooleanMatrix P,BooleanMatrix R){
+		int TP = 0; //really true
+		int TN = 0; //really false
+		int FP = 0; //really false, but saying true
+		int FN = 0; //really true, but saying negative
+
+		for (int i = 0; i <P.getHeight() ; i++) {
+			for (int j = 0; j < P.getWidth(); j++) {
+				if (P.apply(i,j)==  TRUE){
+					if (R.apply(i,j)==  TRUE) {
+						TP+=1;
+					}else{
+						FN+=1;
+					}
+				}else{
+					if (R.apply(i,j)==  TRUE) {
+						FP+=1;
+					}else{
+						TN+=1;
+					}
+				}
+			}
+		}
+		int[] res = {TP,TN,FP,FN};
+		return res;
+	}
+
 
 
 }
