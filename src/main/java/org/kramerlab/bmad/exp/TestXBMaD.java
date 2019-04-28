@@ -13,8 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TestXBMaD{
-    public static void main(String[] args) throws Exception{
-        int[] kValues = {1,2,4,8,16,32,64,128,256};
+    public static void main(String[] args) throws Exception {
+        int[] kValues = {1, 2, 4, 8, 16, 32, 64, 128, 256};
         int numberOfRepeats = 100;
         int n;
         int m;
@@ -26,7 +26,7 @@ public class TestXBMaD{
 
         File folder = new File(".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\data");
         File[] listOfFiles = folder.listFiles();
-        for (int i =0; i < 8; i++)
+        for (int i = 0; i < 8; i++) {
 
             if (listOfFiles[i].isFile()) {
                 String name = listOfFiles[i].getName().split("\\.")[0];
@@ -40,10 +40,10 @@ public class TestXBMaD{
 
                 for (int k : kValues) {
                     if (k > Math.min(n, m)) {
-                        if (exceeded == false){
-                            k = Math.min(n,m);
+                        if (exceeded == false) {
+                            k = Math.min(n, m);
                             exceeded = true;
-                        }else{
+                        } else {
                             continue;
                         }
                     }
@@ -51,16 +51,16 @@ public class TestXBMaD{
 
                         long startTime = System.nanoTime();
 
-                        Tuple<BooleanMatrix, BooleanMatrix> ans = xbmad.iterativeDecompose(T, k,2,10);
+                        Tuple<BooleanMatrix, BooleanMatrix> ans = xbmad.iterativeDecompose(T, k, 2, 10);
 
                         long endTime = System.nanoTime();
-                        double duration = (endTime - startTime)/1e9;
+                        double duration = (endTime - startTime) / 1e9;
 
                         BooleanMatrix R = ans._1.booleanProduct(ans._2);
                         reconError = T.relativeReconstructionError(R, 1d);
                         //1 - (residualMatrix.getDensity() / input.getDensity());
                         coverage = 1 - (reconError / targetDensity);
-                        int[] stats = BooleanMatrix.getStats(T,R);
+                        int[] stats = BooleanMatrix.getStats(T, R);
 
                         if (j != numberOfRepeats - 1) {
                             System.out.printf("\r %d of %d repeats for k = %d done.", j + 1, numberOfRepeats, k);
@@ -68,8 +68,8 @@ public class TestXBMaD{
                             System.out.printf("\r %d of %d repeats for k = %d done.\n", j + 1, numberOfRepeats, k);
                         }
                         String filename = ".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\xorout\\" + name + ".txt";
-                        String outputstring = String.format("%d,%d,%f,%f,%f,%f,%f,%d,%d,%d,%d\n", k,ans._1.getWidth(),reconError,coverage,targetDensity,R.getDensity(),
-                                duration,stats[0],stats[1],stats[2],stats[3]);
+                        String outputstring = String.format("%d,%d,%f,%f,%f,%f,%f,%d,%d,%d,%d\n", k, ans._1.getWidth(), reconError, coverage, targetDensity, R.getDensity(),
+                                duration, stats[0], stats[1], stats[2], stats[3]);
                         File f = new File(filename);
 
                         PrintWriter out = null;
@@ -86,5 +86,6 @@ public class TestXBMaD{
 
             }
 
+        }
     }
 }
