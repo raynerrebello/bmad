@@ -102,17 +102,17 @@ public class BooleanMatrix {
 	 * that is expected to be filled with values 0, ?, 1
 	 */
 	public BooleanMatrix(Instances instances) {
-		this(instances.numInstances(), instances.numAttributes());
-		int row = 0;
-		for (Instance instance: instances) {
-			for (int i = 0; i < instance.numValues(); i++) {
-				int col = instance.index(i);
-				double value = instance.valueSparse(i);
-				byte b = Double.isNaN(value) ? UNKNOWN : value == 0d ? FALSE : TRUE;
-				this.update(row, col, b);
-			}
-			row++;
-		}
+//		this(instances.numInstances(), instances.numAttributes());
+//		int row = 0;
+//		for (Instance instance: instances) {
+//			for (int i = 0; i < instance.numValues(); i++) {
+//				int col = instance.index(i);
+//				double value = instance.valueSparse(i);
+//				byte b = Double.isNaN(value) ? UNKNOWN : value == 0d ? FALSE : TRUE;
+//				this.update(row, col, b);
+//			}
+//			row++;
+//		}
 	}
 
 	public int getWidth() {

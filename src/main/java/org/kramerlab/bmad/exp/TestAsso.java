@@ -24,12 +24,16 @@ public class TestAsso {
         boolean exceeded = false;
 
         BooleanMatrixDecomposition bestUnconfig = BooleanMatrixDecomposition.BEST_UNCONFIGURED;
-        File folder = new File(".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\data");
+        File folder = new File("./src/main/java/org/kramerlab/bmad/exp/data");
         File[] listOfFiles = folder.listFiles();
-        for (int i = 0; i < 7; i++) {
+        for (File x:listOfFiles
+             ) {System.out.println(x.getName());
+
+        }
+        for (int i = Integer.parseInt(args[0]); i < Integer.parseInt(args[1]); i++) {
 
             if (listOfFiles[i].isFile()) {
-                String name = listOfFiles[i].getName().split("\\.")[0];
+                String name = listOfFiles[i].getName().split("/")[0];
                 System.out.println(name);
                 BooleanMatrix T = MatrixFromFile.convert(listOfFiles[i].getPath(), ",");
                 targetDensity = T.getDensity();
@@ -66,7 +70,7 @@ public class TestAsso {
                         } else {
                             System.out.printf("\r %d of %d repeats for k = %d done.\n", j + 1, numberOfRepeats, k);
                         }
-                        String filename = ".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\assoout\\" + name + ".txt";
+                        String filename = "./src/main/java/org/kramerlab/bmad/exp/assoout/" + name + ".txt";
                         String outputstring = String.format("%d,%d,%f,%f,%f,%f,%f,%d,%d,%d,%d\n", k, k, reconError, coverage, targetDensity, R.getDensity(),
                                 duration, stats[0], stats[1], stats[2], stats[3]);
                         File f = new File(filename);
