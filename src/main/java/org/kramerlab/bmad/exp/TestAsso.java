@@ -9,6 +9,7 @@ import org.kramerlab.bmad.scripts.MatrixFromFile;
 import org.kramerlab.bmad.visualization.DecompositionLayout;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +27,7 @@ public class TestAsso {
         BooleanMatrixDecomposition bestUnconfig = BooleanMatrixDecomposition.BEST_UNCONFIGURED;
         File folder = new File("./src/main/java/org/kramerlab/bmad/exp/data");
         File[] listOfFiles = folder.listFiles();
+        Arrays.sort(listOfFiles);
         for (File x:listOfFiles
              ) {System.out.println(x.getName());
 
