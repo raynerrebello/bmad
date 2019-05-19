@@ -32,7 +32,6 @@ hs_err_pid*
 
 
 **/*.xlsx
-**/*.csv
 *.iml
 **/__pycache__/
 

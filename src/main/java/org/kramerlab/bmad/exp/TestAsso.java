@@ -32,6 +32,7 @@ public class TestAsso {
              ) {System.out.println(x.getName());
 
         }
+
         for (int i = Integer.parseInt(args[0]); i < Integer.parseInt(args[1]); i++) {
 
             if (listOfFiles[i].isFile()) {

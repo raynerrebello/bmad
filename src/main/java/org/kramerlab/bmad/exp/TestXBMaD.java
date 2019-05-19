@@ -29,7 +29,7 @@ public class TestXBMaD{
         for (int i = 0; i < 8; i++) {
 
             if (listOfFiles[i].isFile()) {
-                String name = listOfFiles[i].getName().split("\\.")[0];
+                String name = listOfFiles[i].getName().split("/")[0];
                 System.out.println(name);
                 BooleanMatrix T = MatrixFromFile.convert(listOfFiles[i].getPath(), ",");
                 targetDensity = T.getDensity();

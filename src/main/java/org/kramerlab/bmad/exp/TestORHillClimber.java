@@ -20,7 +20,7 @@ public class TestORHillClimber {
         double coverage = 0;
         HillClimber hillClimber;
         hillClimber = new HillClimber();
-        File folder = new File(".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\datasets");
+        File folder = new File("./src/main/java/org/kramerlab/bmad/exp/datasets");
         File[] listOfFiles = folder.listFiles();
 
         for (int j = Integer.parseInt(args[0]); j < Integer.parseInt(args[1]); j++) {
@@ -54,7 +54,7 @@ public class TestORHillClimber {
                         coverage = 1 - (reconError / targetDensity);
                         int[] stats = BooleanMatrix.getStats(T, R);
 
-                        String filename = String.format(".\\src\\main\\java\\org\\kramerlab\\bmad\\exp\\hcorout\\k_%d_r_%d_%s.txt",k,(j+1),name);
+                        String filename = String.format("./src/main/java/org/kramerlab/bmad/exp/hcorout/k_%d_r_%d_%s.txt",k,(j+1),name);
                         String outputstring = String.format("%d,%d,%f,%f,%f,%f,%f,%d,%d,%d,%d\n", k, ans._1.getWidth(), reconError, coverage, targetDensity, R.getDensity(),
                                 duration, stats[0], stats[1], stats[2], stats[3]);
                         File f = new File(filename);
