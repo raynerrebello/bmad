@@ -45,14 +45,11 @@ public class TestAsso {
                 exceeded = false;
 
                 for (int k : kValues) {
+
                     if (k > Math.min(n, m)) {
-                        if (exceeded == false) {
-                            k = Math.min(n, m);
-                            exceeded = true;
-                        } else {
                             continue;
-                        }
                     }
+
                     for (int j = 0; j < numberOfRepeats; j++) {
 
                         long startTime = System.nanoTime();
