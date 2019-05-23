@@ -21,16 +21,24 @@ public class HillClimber implements Heuristic{
     public Tuple<BooleanMatrix,BooleanMatrix> initialise(BooleanMatrix C, int k){
         int n = C.getHeight();
         int m = C.getWidth();
+        int x;
         boolean fillS = (n>m) ?  true:false;
         BooleanMatrix S = RandomMatrixGeneration.randomMatrix(n,k,0,0);
         BooleanMatrix B = RandomMatrixGeneration.randomMatrix(k,m,0,0);
-
+        if (C.getDensity() == 0){
+            return new Tuple<>(S,B);
+        }
         Random ran = new Random();
 
 
         if (fillS == true) {
             for (int j = 0; j < k ; j++) {
-                int x = ran.nextInt(m);
+                while (true) {
+                     x = ran.nextInt(m);
+                     if (C.getCol(x).getDensity() > 0){
+                         break;
+                     }
+                }
                 for (int i = 0; i < n; i++) {
                     S.update(i,j,C.apply(i,x));
                 }
@@ -38,7 +46,12 @@ public class HillClimber implements Heuristic{
         }else{
 
             for (int i = 0; i < k ; i++) {
-                int x = ran.nextInt(n);
+                while (true) {
+                    x = ran.nextInt(n);
+                    if (C.getRow(x).getDensity() > 0){
+                        break;
+                    }
+                }
                 for (int j = 0; j < m; j++) {
                     B.update(i,j,C.apply(x,j));
                 }
@@ -165,10 +178,10 @@ public class HillClimber implements Heuristic{
                 B = output._2;
             }
 
-            System.out.printf("\r %d out of %d restarts are complete with the best average recon = %f",i+1,numRestarts,bestError);
+            //System.out.printf("\r %d out of %d restarts are complete with the best average recon = %f",i+1,numRestarts,bestError);
         }
 
-        System.out.printf("\n Using %s, %s, Best_recon = %f%n",  xor? "XOR": " OR", "nextDescent", bestError);
+        //System.out.printf("\n Using %s, %s, Best_recon = %f%n",  xor? "XOR": " OR", "nextDescent", bestError);
         return new Tuple <> (S, B);
 
     }
